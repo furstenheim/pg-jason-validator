@@ -1,0 +1,119 @@
+-- additionalProperties being false does not allow other properties
+-- no additional properties is valid
+SELECT additional_properties_1('{"foo":1}');
+ additional_properties_1 
+-------------------------
+ t
+(1 row)
+
+-- an additional property is invalid
+SELECT additional_properties_1('{"foo":1,"bar":2,"quux":"boom"}');
+ additional_properties_1 
+-------------------------
+ f
+(1 row)
+
+-- ignores arrays
+SELECT additional_properties_1('[1,2,3]');
+ additional_properties_1 
+-------------------------
+ t
+(1 row)
+
+-- ignores strings
+SELECT additional_properties_1('"foobarbaz"');
+ additional_properties_1 
+-------------------------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT additional_properties_1('12');
+ additional_properties_1 
+-------------------------
+ t
+(1 row)
+
+-- patternProperties are not additional properties
+SELECT additional_properties_1('{"foo":1,"vroom":2}');
+ additional_properties_1 
+-------------------------
+ t
+(1 row)
+
+-- non-ASCII pattern with additionalProperties
+-- matching the pattern is valid
+SELECT additional_properties_2('{"ármányos":2}');
+ additional_properties_2 
+-------------------------
+ t
+(1 row)
+
+-- not matching the pattern is invalid
+SELECT additional_properties_2('{"élmény":2}');
+ additional_properties_2 
+-------------------------
+ f
+(1 row)
+
+-- additionalProperties with schema
+-- no additional properties is valid
+SELECT additional_properties_3('{"foo":1}');
+ additional_properties_3 
+-------------------------
+ t
+(1 row)
+
+-- an additional valid property is valid
+SELECT additional_properties_3('{"foo":1,"bar":2,"quux":true}');
+ additional_properties_3 
+-------------------------
+ t
+(1 row)
+
+-- an additional invalid property is invalid
+SELECT additional_properties_3('{"foo":1,"bar":2,"quux":12}');
+ additional_properties_3 
+-------------------------
+ f
+(1 row)
+
+-- additionalProperties can exist by itself
+-- an additional valid property is valid
+SELECT additional_properties_4('{"foo":true}');
+ additional_properties_4 
+-------------------------
+ t
+(1 row)
+
+-- an additional invalid property is invalid
+SELECT additional_properties_4('{"foo":1}');
+ additional_properties_4 
+-------------------------
+ f
+(1 row)
+
+-- additionalProperties are allowed by default
+-- additional properties are allowed
+SELECT additional_properties_5('{"foo":1,"bar":2,"quux":true}');
+ additional_properties_5 
+-------------------------
+ t
+(1 row)
+
+-- additionalProperties does not look in applicators
+-- properties defined in allOf are not examined
+SELECT additional_properties_6('{"foo":1,"bar":true}');
+ additional_properties_6 
+-------------------------
+ f
+(1 row)
+
+-- additionalProperties with null valued instance properties
+-- allows null values
+SELECT additional_properties_7('{"foo":null}');
+ additional_properties_7 
+-------------------------
+ t
+(1 row)
+

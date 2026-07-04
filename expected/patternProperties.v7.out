@@ -1,0 +1,166 @@
+-- patternProperties validates properties matching a regex
+-- a single valid match is valid
+SELECT misc_11('{"foo":1}');
+ misc_11 
+---------
+ t
+(1 row)
+
+-- multiple valid matches is valid
+SELECT misc_11('{"foo":1,"foooooo":2}');
+ misc_11 
+---------
+ t
+(1 row)
+
+-- a single invalid match is invalid
+SELECT misc_11('{"foo":"bar","fooooo":2}');
+ misc_11 
+---------
+ f
+(1 row)
+
+-- multiple invalid matches is invalid
+SELECT misc_11('{"foo":"bar","foooooo":"baz"}');
+ misc_11 
+---------
+ f
+(1 row)
+
+-- ignores arrays
+SELECT misc_11('["foo"]');
+ misc_11 
+---------
+ t
+(1 row)
+
+-- ignores strings
+SELECT misc_11('"foo"');
+ misc_11 
+---------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT misc_11('12');
+ misc_11 
+---------
+ t
+(1 row)
+
+-- multiple simultaneous patternProperties are validated
+-- a single valid match is valid
+SELECT pattern_properties_1('{"a":21}');
+ pattern_properties_1 
+----------------------
+ t
+(1 row)
+
+-- a simultaneous match is valid
+SELECT pattern_properties_1('{"aaaa":18}');
+ pattern_properties_1 
+----------------------
+ t
+(1 row)
+
+-- multiple matches is valid
+SELECT pattern_properties_1('{"a":21,"aaaa":18}');
+ pattern_properties_1 
+----------------------
+ t
+(1 row)
+
+-- an invalid due to one is invalid
+SELECT pattern_properties_1('{"a":"bar"}');
+ pattern_properties_1 
+----------------------
+ f
+(1 row)
+
+-- an invalid due to the other is invalid
+SELECT pattern_properties_1('{"aaaa":31}');
+ pattern_properties_1 
+----------------------
+ f
+(1 row)
+
+-- an invalid due to both is invalid
+SELECT pattern_properties_1('{"aaa":"foo","aaaa":31}');
+ pattern_properties_1 
+----------------------
+ f
+(1 row)
+
+-- regexes are not anchored by default and are case sensitive
+-- non recognized members are ignored
+SELECT pattern_properties_2('{"answer 1":"42"}');
+ pattern_properties_2 
+----------------------
+ t
+(1 row)
+
+-- recognized members are accounted for
+SELECT pattern_properties_2('{"a31b":null}');
+ pattern_properties_2 
+----------------------
+ f
+(1 row)
+
+-- regexes are case sensitive
+SELECT pattern_properties_2('{"a_x_3":3}');
+ pattern_properties_2 
+----------------------
+ t
+(1 row)
+
+-- regexes are case sensitive, 2
+SELECT pattern_properties_2('{"a_X_3":3}');
+ pattern_properties_2 
+----------------------
+ f
+(1 row)
+
+-- patternProperties with boolean schemas
+-- object with property matching schema true is valid
+SELECT pattern_properties_v7_1('{"foo":1}');
+ pattern_properties_v7_1 
+-------------------------
+ t
+(1 row)
+
+-- object with property matching schema false is invalid
+SELECT pattern_properties_v7_1('{"bar":2}');
+ pattern_properties_v7_1 
+-------------------------
+ f
+(1 row)
+
+-- object with both properties is invalid
+SELECT pattern_properties_v7_1('{"foo":1,"bar":2}');
+ pattern_properties_v7_1 
+-------------------------
+ f
+(1 row)
+
+-- object with a property matching both true and false is invalid
+SELECT pattern_properties_v7_1('{"foobar":1}');
+ pattern_properties_v7_1 
+-------------------------
+ f
+(1 row)
+
+-- empty object is valid
+SELECT pattern_properties_v7_1('{}');
+ pattern_properties_v7_1 
+-------------------------
+ t
+(1 row)
+
+-- patternProperties with null valued instance properties
+-- allows null values
+SELECT pattern_properties_3('{"foobar":null}');
+ pattern_properties_3 
+----------------------
+ t
+(1 row)
+

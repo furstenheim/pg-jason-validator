@@ -1,0 +1,200 @@
+-- oneOf
+-- first oneOf valid
+SELECT one_of_1('1');
+ one_of_1 
+----------
+ t
+(1 row)
+
+-- second oneOf valid
+SELECT one_of_1('2.5');
+ one_of_1 
+----------
+ t
+(1 row)
+
+-- both oneOf valid
+SELECT one_of_1('3');
+ one_of_1 
+----------
+ f
+(1 row)
+
+-- neither oneOf valid
+SELECT one_of_1('1.5');
+ one_of_1 
+----------
+ f
+(1 row)
+
+-- oneOf with base schema
+-- mismatch base schema
+SELECT one_of_2('3');
+ one_of_2 
+----------
+ f
+(1 row)
+
+-- one oneOf valid
+SELECT one_of_2('"foobar"');
+ one_of_2 
+----------
+ t
+(1 row)
+
+-- both oneOf valid
+SELECT one_of_2('"foo"');
+ one_of_2 
+----------
+ f
+(1 row)
+
+-- oneOf with boolean schemas, all true
+-- any value is invalid
+SELECT one_of_v7_1('"foo"');
+ one_of_v7_1 
+-------------
+ f
+(1 row)
+
+-- oneOf with boolean schemas, one true
+-- any value is valid
+SELECT one_of_v7_2('"foo"');
+ one_of_v7_2 
+-------------
+ t
+(1 row)
+
+-- oneOf with boolean schemas, more than one true
+-- any value is invalid
+SELECT one_of_v7_3('"foo"');
+ one_of_v7_3 
+-------------
+ f
+(1 row)
+
+-- oneOf with boolean schemas, all false
+-- any value is invalid
+SELECT one_of_v7_4('"foo"');
+ one_of_v7_4 
+-------------
+ f
+(1 row)
+
+-- oneOf complex types
+-- first oneOf valid (complex)
+SELECT one_of_3('{"bar":2}');
+ one_of_3 
+----------
+ t
+(1 row)
+
+-- second oneOf valid (complex)
+SELECT one_of_3('{"foo":"baz"}');
+ one_of_3 
+----------
+ t
+(1 row)
+
+-- both oneOf valid (complex)
+SELECT one_of_3('{"foo":"baz","bar":2}');
+ one_of_3 
+----------
+ f
+(1 row)
+
+-- neither oneOf valid (complex)
+SELECT one_of_3('{"foo":2,"bar":"quux"}');
+ one_of_3 
+----------
+ f
+(1 row)
+
+-- oneOf with empty schema
+-- one valid - valid
+SELECT one_of_4('"foo"');
+ one_of_4 
+----------
+ t
+(1 row)
+
+-- both valid - invalid
+SELECT one_of_4('123');
+ one_of_4 
+----------
+ f
+(1 row)
+
+-- oneOf with required
+-- both invalid - invalid
+SELECT one_of_5('{"bar":2}');
+ one_of_5 
+----------
+ f
+(1 row)
+
+-- first valid - valid
+SELECT one_of_5('{"foo":1,"bar":2}');
+ one_of_5 
+----------
+ t
+(1 row)
+
+-- second valid - valid
+SELECT one_of_5('{"foo":1,"baz":3}');
+ one_of_5 
+----------
+ t
+(1 row)
+
+-- both valid - invalid
+SELECT one_of_5('{"foo":1,"bar":2,"baz":3}');
+ one_of_5 
+----------
+ f
+(1 row)
+
+-- oneOf with missing optional property
+-- first oneOf valid
+SELECT one_of_v7_5('{"bar":8}');
+ one_of_v7_5 
+-------------
+ t
+(1 row)
+
+-- second oneOf valid
+SELECT one_of_v7_5('{"foo":"foo"}');
+ one_of_v7_5 
+-------------
+ t
+(1 row)
+
+-- both oneOf valid
+SELECT one_of_v7_5('{"foo":"foo","bar":8}');
+ one_of_v7_5 
+-------------
+ f
+(1 row)
+
+-- neither oneOf valid
+SELECT one_of_v7_5('{"baz":"quux"}');
+ one_of_v7_5 
+-------------
+ f
+(1 row)
+
+-- nested oneOf, to check validation semantics
+-- null is valid
+SELECT one_of_7('null');
+ one_of_7 
+----------
+ t
+(1 row)
+
+-- anything non-null is invalid
+SELECT one_of_7('123');
+ one_of_7 
+----------
+ f
+(1 row)
+

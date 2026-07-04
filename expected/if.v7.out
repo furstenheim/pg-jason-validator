@@ -1,0 +1,192 @@
+-- ignore if without then or else
+-- valid when valid against lone if
+SELECT if_v7_1('0');
+ if_v7_1 
+---------
+ t
+(1 row)
+
+-- valid when invalid against lone if
+SELECT if_v7_1('"hello"');
+ if_v7_1 
+---------
+ t
+(1 row)
+
+-- ignore then without if
+-- valid when valid against lone then
+SELECT if_v7_2('0');
+ if_v7_2 
+---------
+ t
+(1 row)
+
+-- valid when invalid against lone then
+SELECT if_v7_2('"hello"');
+ if_v7_2 
+---------
+ t
+(1 row)
+
+-- ignore else without if
+-- valid when valid against lone else
+SELECT if_v7_3('0');
+ if_v7_3 
+---------
+ t
+(1 row)
+
+-- valid when invalid against lone else
+SELECT if_v7_3('"hello"');
+ if_v7_3 
+---------
+ t
+(1 row)
+
+-- if and then without else
+-- valid through then
+SELECT if_v7_4('-1');
+ if_v7_4 
+---------
+ t
+(1 row)
+
+-- invalid through then
+SELECT if_v7_4('-100');
+ if_v7_4 
+---------
+ f
+(1 row)
+
+-- valid when if test fails
+SELECT if_v7_4('3');
+ if_v7_4 
+---------
+ t
+(1 row)
+
+-- if and else without then
+-- valid when if test passes
+SELECT if_v7_5('-1');
+ if_v7_5 
+---------
+ t
+(1 row)
+
+-- valid through else
+SELECT if_v7_5('4');
+ if_v7_5 
+---------
+ t
+(1 row)
+
+-- invalid through else
+SELECT if_v7_5('3');
+ if_v7_5 
+---------
+ f
+(1 row)
+
+-- validate against correct branch, then vs else
+-- valid through then
+SELECT if_v7_6('-1');
+ if_v7_6 
+---------
+ t
+(1 row)
+
+-- invalid through then
+SELECT if_v7_6('-100');
+ if_v7_6 
+---------
+ f
+(1 row)
+
+-- valid through else
+SELECT if_v7_6('4');
+ if_v7_6 
+---------
+ t
+(1 row)
+
+-- invalid through else
+SELECT if_v7_6('3');
+ if_v7_6 
+---------
+ f
+(1 row)
+
+-- non-interference across combined schemas
+-- valid, but would have been invalid through then
+SELECT if_v7_7('-100');
+ if_v7_7 
+---------
+ t
+(1 row)
+
+-- valid, but would have been invalid through else
+SELECT if_v7_7('3');
+ if_v7_7 
+---------
+ t
+(1 row)
+
+-- if with boolean schema true
+-- boolean schema true in if always chooses the then path (valid)
+SELECT if_v7_8('"then"');
+ if_v7_8 
+---------
+ t
+(1 row)
+
+-- boolean schema true in if always chooses the then path (invalid)
+SELECT if_v7_8('"else"');
+ if_v7_8 
+---------
+ f
+(1 row)
+
+-- if with boolean schema false
+-- boolean schema false in if always chooses the else path (invalid)
+SELECT if_v7_9('"then"');
+ if_v7_9 
+---------
+ f
+(1 row)
+
+-- boolean schema false in if always chooses the else path (valid)
+SELECT if_v7_9('"else"');
+ if_v7_9 
+---------
+ t
+(1 row)
+
+-- if appears at the end when serialized (keyword processing sequence)
+-- yes redirects to then and passes
+SELECT if_v7_10('"yes"');
+ if_v7_10 
+----------
+ t
+(1 row)
+
+-- other redirects to else and passes
+SELECT if_v7_10('"other"');
+ if_v7_10 
+----------
+ t
+(1 row)
+
+-- no redirects to then and fails
+SELECT if_v7_10('"no"');
+ if_v7_10 
+----------
+ f
+(1 row)
+
+-- invalid redirects to else and fails
+SELECT if_v7_10('"invalid"');
+ if_v7_10 
+----------
+ f
+(1 row)
+

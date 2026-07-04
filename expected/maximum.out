@@ -1,0 +1,102 @@
+-- maximum validation
+-- below the maximum is valid
+SELECT misc_37('2.6');
+ misc_37 
+---------
+ t
+(1 row)
+
+-- boundary point is valid
+SELECT misc_37('3');
+ misc_37 
+---------
+ t
+(1 row)
+
+-- above the maximum is invalid
+SELECT misc_37('3.5');
+ misc_37 
+---------
+ f
+(1 row)
+
+-- ignores non-numbers
+SELECT misc_37('"x"');
+ misc_37 
+---------
+ t
+(1 row)
+
+-- maximum validation with unsigned integer
+-- below the maximum is invalid
+SELECT maximum_1('299.97');
+ maximum_1 
+-----------
+ t
+(1 row)
+
+-- boundary point integer is valid
+SELECT maximum_1('300');
+ maximum_1 
+-----------
+ t
+(1 row)
+
+-- boundary point float is valid
+SELECT maximum_1('300');
+ maximum_1 
+-----------
+ t
+(1 row)
+
+-- above the maximum is invalid
+SELECT maximum_1('300.5');
+ maximum_1 
+-----------
+ f
+(1 row)
+
+-- maximum validation (explicit false exclusivity)
+-- below the maximum is valid
+SELECT maximum_2('2.6');
+ maximum_2 
+-----------
+ t
+(1 row)
+
+-- boundary point is valid
+SELECT maximum_2('3');
+ maximum_2 
+-----------
+ t
+(1 row)
+
+-- above the maximum is invalid
+SELECT maximum_2('3.5');
+ maximum_2 
+-----------
+ f
+(1 row)
+
+-- ignores non-numbers
+SELECT maximum_2('"x"');
+ maximum_2 
+-----------
+ t
+(1 row)
+
+-- exclusiveMaximum validation
+-- below the maximum is still valid
+SELECT maximum_3('2.2');
+ maximum_3 
+-----------
+ t
+(1 row)
+
+-- boundary point is invalid
+SELECT maximum_3('3');
+ maximum_3 
+-----------
+ f
+(1 row)
+

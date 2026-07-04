@@ -1,0 +1,27 @@
+{
+  "abstract": "Compile-time generated jsonb schema validators",
+  "maintainer": "Furstenheim <furstenheim@gmail.com>",
+  "license": "mit",
+  "provides": {
+    "pg_jason_validator": {
+      "file": "pg_jason_validator--0.1.0.sql",
+      "version": "0.1.0"
+    }
+  },
+  "meta-spec": {
+    "version": "1.0.0",
+    "url": "http://pgxn.org/meta/spec.txt"
+  },
+  "name": "pg_jason_validator",
+  "version": "0.1.0",
+  "description": "Generates one specialized C validator function per static JSON schema at build time, so validating a jsonb value involves no schema introspection at run time",
+  "resources": {
+    "repository": {
+      "url": "https://github.com/furstenheim/pg-jason-validator",
+      "type": "git"
+    }
+  },
+  "tags": [
+    "jsonb", "json"
+  ]
+}

@@ -1,0 +1,198 @@
+-- allOf
+-- allOf
+SELECT all_of_1('{"foo":"baz","bar":2}');
+ all_of_1 
+----------
+ t
+(1 row)
+
+-- mismatch second
+SELECT all_of_1('{"foo":"baz"}');
+ all_of_1 
+----------
+ f
+(1 row)
+
+-- mismatch first
+SELECT all_of_1('{"bar":2}');
+ all_of_1 
+----------
+ f
+(1 row)
+
+-- wrong type
+SELECT all_of_1('{"foo":"baz","bar":"quux"}');
+ all_of_1 
+----------
+ f
+(1 row)
+
+-- allOf with base schema
+-- valid
+SELECT all_of_2('{"foo":"quux","bar":2,"baz":null}');
+ all_of_2 
+----------
+ t
+(1 row)
+
+-- mismatch base schema
+SELECT all_of_2('{"foo":"quux","baz":null}');
+ all_of_2 
+----------
+ f
+(1 row)
+
+-- mismatch first allOf
+SELECT all_of_2('{"bar":2,"baz":null}');
+ all_of_2 
+----------
+ f
+(1 row)
+
+-- mismatch second allOf
+SELECT all_of_2('{"foo":"quux","bar":2}');
+ all_of_2 
+----------
+ f
+(1 row)
+
+-- mismatch both
+SELECT all_of_2('{"bar":2}');
+ all_of_2 
+----------
+ f
+(1 row)
+
+-- allOf simple types
+-- valid
+SELECT all_of_3('25');
+ all_of_3 
+----------
+ t
+(1 row)
+
+-- mismatch one
+SELECT all_of_3('35');
+ all_of_3 
+----------
+ f
+(1 row)
+
+-- allOf with one empty schema
+-- any data is valid
+SELECT all_of_4('1');
+ all_of_4 
+----------
+ t
+(1 row)
+
+-- allOf with two empty schemas
+-- any data is valid
+SELECT all_of_5('1');
+ all_of_5 
+----------
+ t
+(1 row)
+
+-- allOf with the first empty schema
+-- number is valid
+SELECT all_of_6('1');
+ all_of_6 
+----------
+ t
+(1 row)
+
+-- string is invalid
+SELECT all_of_6('"foo"');
+ all_of_6 
+----------
+ f
+(1 row)
+
+-- allOf with the last empty schema
+-- number is valid
+SELECT all_of_7('1');
+ all_of_7 
+----------
+ t
+(1 row)
+
+-- string is invalid
+SELECT all_of_7('"foo"');
+ all_of_7 
+----------
+ f
+(1 row)
+
+-- nested allOf, to check validation semantics
+-- null is valid
+SELECT all_of_8('null');
+ all_of_8 
+----------
+ t
+(1 row)
+
+-- anything non-null is invalid
+SELECT all_of_8('123');
+ all_of_8 
+----------
+ f
+(1 row)
+
+-- allOf combined with anyOf, oneOf
+-- allOf: false, anyOf: false, oneOf: false
+SELECT all_of_9('1');
+ all_of_9 
+----------
+ f
+(1 row)
+
+-- allOf: false, anyOf: false, oneOf: true
+SELECT all_of_9('5');
+ all_of_9 
+----------
+ f
+(1 row)
+
+-- allOf: false, anyOf: true, oneOf: false
+SELECT all_of_9('3');
+ all_of_9 
+----------
+ f
+(1 row)
+
+-- allOf: false, anyOf: true, oneOf: true
+SELECT all_of_9('15');
+ all_of_9 
+----------
+ f
+(1 row)
+
+-- allOf: true, anyOf: false, oneOf: false
+SELECT all_of_9('2');
+ all_of_9 
+----------
+ f
+(1 row)
+
+-- allOf: true, anyOf: false, oneOf: true
+SELECT all_of_9('10');
+ all_of_9 
+----------
+ f
+(1 row)
+
+-- allOf: true, anyOf: true, oneOf: false
+SELECT all_of_9('6');
+ all_of_9 
+----------
+ f
+(1 row)
+
+-- allOf: true, anyOf: true, oneOf: true
+SELECT all_of_9('30');
+ all_of_9 
+----------
+ t
+(1 row)
+

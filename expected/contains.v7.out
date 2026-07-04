@@ -1,0 +1,154 @@
+-- contains keyword validation
+-- array with item matching schema (5) is valid
+SELECT contains_v7_1('[3,4,5]');
+ contains_v7_1 
+---------------
+ t
+(1 row)
+
+-- array with item matching schema (6) is valid
+SELECT contains_v7_1('[3,4,6]');
+ contains_v7_1 
+---------------
+ t
+(1 row)
+
+-- array with two items matching schema (5, 6) is valid
+SELECT contains_v7_1('[3,4,5,6]');
+ contains_v7_1 
+---------------
+ t
+(1 row)
+
+-- array without items matching schema is invalid
+SELECT contains_v7_1('[2,3,4]');
+ contains_v7_1 
+---------------
+ f
+(1 row)
+
+-- empty array is invalid
+SELECT contains_v7_1('[]');
+ contains_v7_1 
+---------------
+ f
+(1 row)
+
+-- not array is valid
+SELECT contains_v7_1('{}');
+ contains_v7_1 
+---------------
+ t
+(1 row)
+
+-- contains keyword with const keyword
+-- array with item 5 is valid
+SELECT contains_v7_2('[3,4,5]');
+ contains_v7_2 
+---------------
+ t
+(1 row)
+
+-- array with two items 5 is valid
+SELECT contains_v7_2('[3,4,5,5]');
+ contains_v7_2 
+---------------
+ t
+(1 row)
+
+-- array without item 5 is invalid
+SELECT contains_v7_2('[1,2,3,4]');
+ contains_v7_2 
+---------------
+ f
+(1 row)
+
+-- contains keyword with boolean schema true
+-- any non-empty array is valid
+SELECT contains_v7_3('["foo"]');
+ contains_v7_3 
+---------------
+ t
+(1 row)
+
+-- empty array is invalid
+SELECT contains_v7_3('[]');
+ contains_v7_3 
+---------------
+ f
+(1 row)
+
+-- contains keyword with boolean schema false
+-- any non-empty array is invalid
+SELECT contains_v7_4('["foo"]');
+ contains_v7_4 
+---------------
+ f
+(1 row)
+
+-- empty array is invalid
+SELECT contains_v7_4('[]');
+ contains_v7_4 
+---------------
+ f
+(1 row)
+
+-- non-arrays are valid
+SELECT contains_v7_4('"contains does not apply to strings"');
+ contains_v7_4 
+---------------
+ t
+(1 row)
+
+-- items + contains
+-- matches items, does not match contains
+SELECT contains_v7_5('[2,4,8]');
+ contains_v7_5 
+---------------
+ f
+(1 row)
+
+-- does not match items, matches contains
+SELECT contains_v7_5('[3,6,9]');
+ contains_v7_5 
+---------------
+ f
+(1 row)
+
+-- matches both items and contains
+SELECT contains_v7_5('[6,12]');
+ contains_v7_5 
+---------------
+ t
+(1 row)
+
+-- matches neither items nor contains
+SELECT contains_v7_5('[1,5]');
+ contains_v7_5 
+---------------
+ f
+(1 row)
+
+-- contains with false if subschema
+-- any non-empty array is valid
+SELECT contains_v7_6('["foo"]');
+ contains_v7_6 
+---------------
+ t
+(1 row)
+
+-- empty array is invalid
+SELECT contains_v7_6('[]');
+ contains_v7_6 
+---------------
+ f
+(1 row)
+
+-- contains with null instance elements
+-- allows null items
+SELECT contains_v7_7('[null]');
+ contains_v7_7 
+---------------
+ t
+(1 row)
+

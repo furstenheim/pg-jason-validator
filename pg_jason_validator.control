@@ -1,0 +1,5 @@
+# pg_jason_validator extension
+comment = 'compile-time generated jsonb schema validators'
+default_version = '0.1.0'
+module_pathname = '$libdir/pg_jason_validator'
+relocatable = true

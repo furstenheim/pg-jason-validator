@@ -1,0 +1,95 @@
+-- propertyNames validation
+-- all property names valid
+SELECT property_names_v7_1('{"f":{},"foo":{}}');
+ property_names_v7_1 
+---------------------
+ t
+(1 row)
+
+-- some property names invalid
+SELECT property_names_v7_1('{"foo":{},"foobar":{}}');
+ property_names_v7_1 
+---------------------
+ f
+(1 row)
+
+-- object without properties is valid
+SELECT property_names_v7_1('{}');
+ property_names_v7_1 
+---------------------
+ t
+(1 row)
+
+-- ignores arrays
+SELECT property_names_v7_1('[1,2,3,4]');
+ property_names_v7_1 
+---------------------
+ t
+(1 row)
+
+-- ignores strings
+SELECT property_names_v7_1('"foobar"');
+ property_names_v7_1 
+---------------------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT property_names_v7_1('12');
+ property_names_v7_1 
+---------------------
+ t
+(1 row)
+
+-- propertyNames validation with pattern
+-- matching property names valid
+SELECT property_names_v7_2('{"a":{},"aa":{},"aaa":{}}');
+ property_names_v7_2 
+---------------------
+ t
+(1 row)
+
+-- non-matching property name is invalid
+SELECT property_names_v7_2('{"aaA":{}}');
+ property_names_v7_2 
+---------------------
+ f
+(1 row)
+
+-- object without properties is valid
+SELECT property_names_v7_2('{}');
+ property_names_v7_2 
+---------------------
+ t
+(1 row)
+
+-- propertyNames with boolean schema true
+-- object with any properties is valid
+SELECT property_names_v7_3('{"foo":1}');
+ property_names_v7_3 
+---------------------
+ t
+(1 row)
+
+-- empty object is valid
+SELECT property_names_v7_3('{}');
+ property_names_v7_3 
+---------------------
+ t
+(1 row)
+
+-- propertyNames with boolean schema false
+-- object with any properties is invalid
+SELECT property_names_v7_4('{"foo":1}');
+ property_names_v7_4 
+---------------------
+ f
+(1 row)
+
+-- empty object is valid
+SELECT property_names_v7_4('{}');
+ property_names_v7_4 
+---------------------
+ t
+(1 row)
+

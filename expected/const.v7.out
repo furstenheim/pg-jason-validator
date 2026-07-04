@@ -1,0 +1,350 @@
+-- const validation
+-- same value is valid
+SELECT const_v7_1('2');
+ const_v7_1 
+------------
+ t
+(1 row)
+
+-- another value is invalid
+SELECT const_v7_1('5');
+ const_v7_1 
+------------
+ f
+(1 row)
+
+-- another type is invalid
+SELECT const_v7_1('"a"');
+ const_v7_1 
+------------
+ f
+(1 row)
+
+-- const with object
+-- same object is valid
+SELECT const_v7_2('{"foo":"bar","baz":"bax"}');
+ const_v7_2 
+------------
+ t
+(1 row)
+
+-- same object with different property order is valid
+SELECT const_v7_2('{"baz":"bax","foo":"bar"}');
+ const_v7_2 
+------------
+ t
+(1 row)
+
+-- another object is invalid
+SELECT const_v7_2('{"foo":"bar"}');
+ const_v7_2 
+------------
+ f
+(1 row)
+
+-- another type is invalid
+SELECT const_v7_2('[1,2]');
+ const_v7_2 
+------------
+ f
+(1 row)
+
+-- const with array
+-- same array is valid
+SELECT const_v7_3('[{"foo":"bar"}]');
+ const_v7_3 
+------------
+ t
+(1 row)
+
+-- another array item is invalid
+SELECT const_v7_3('[2]');
+ const_v7_3 
+------------
+ f
+(1 row)
+
+-- array with additional items is invalid
+SELECT const_v7_3('[1,2,3]');
+ const_v7_3 
+------------
+ f
+(1 row)
+
+-- const with null
+-- null is valid
+SELECT const_v7_4('null');
+ const_v7_4 
+------------
+ t
+(1 row)
+
+-- not null is invalid
+SELECT const_v7_4('0');
+ const_v7_4 
+------------
+ f
+(1 row)
+
+-- const with false does not match 0
+-- false is valid
+SELECT const_v7_5('false');
+ const_v7_5 
+------------
+ t
+(1 row)
+
+-- integer zero is invalid
+SELECT const_v7_5('0');
+ const_v7_5 
+------------
+ f
+(1 row)
+
+-- float zero is invalid
+SELECT const_v7_5('0');
+ const_v7_5 
+------------
+ f
+(1 row)
+
+-- const with true does not match 1
+-- true is valid
+SELECT const_v7_6('true');
+ const_v7_6 
+------------
+ t
+(1 row)
+
+-- integer one is invalid
+SELECT const_v7_6('1');
+ const_v7_6 
+------------
+ f
+(1 row)
+
+-- float one is invalid
+SELECT const_v7_6('1');
+ const_v7_6 
+------------
+ f
+(1 row)
+
+-- const with [false] does not match [0]
+-- [false] is valid
+SELECT const_v7_7('[false]');
+ const_v7_7 
+------------
+ t
+(1 row)
+
+-- [0] is invalid
+SELECT const_v7_7('[0]');
+ const_v7_7 
+------------
+ f
+(1 row)
+
+-- [0.0] is invalid
+SELECT const_v7_7('[0]');
+ const_v7_7 
+------------
+ f
+(1 row)
+
+-- const with [true] does not match [1]
+-- [true] is valid
+SELECT const_v7_8('[true]');
+ const_v7_8 
+------------
+ t
+(1 row)
+
+-- [1] is invalid
+SELECT const_v7_8('[1]');
+ const_v7_8 
+------------
+ f
+(1 row)
+
+-- [1.0] is invalid
+SELECT const_v7_8('[1]');
+ const_v7_8 
+------------
+ f
+(1 row)
+
+-- const with {"a": false} does not match {"a": 0}
+-- {"a": false} is valid
+SELECT const_v7_9('{"a":false}');
+ const_v7_9 
+------------
+ t
+(1 row)
+
+-- {"a": 0} is invalid
+SELECT const_v7_9('{"a":0}');
+ const_v7_9 
+------------
+ f
+(1 row)
+
+-- {"a": 0.0} is invalid
+SELECT const_v7_9('{"a":0}');
+ const_v7_9 
+------------
+ f
+(1 row)
+
+-- const with {"a": true} does not match {"a": 1}
+-- {"a": true} is valid
+SELECT const_v7_10('{"a":true}');
+ const_v7_10 
+-------------
+ t
+(1 row)
+
+-- {"a": 1} is invalid
+SELECT const_v7_10('{"a":1}');
+ const_v7_10 
+-------------
+ f
+(1 row)
+
+-- {"a": 1.0} is invalid
+SELECT const_v7_10('{"a":1}');
+ const_v7_10 
+-------------
+ f
+(1 row)
+
+-- const with 0 does not match other zero-like types
+-- false is invalid
+SELECT const_v7_11('false');
+ const_v7_11 
+-------------
+ f
+(1 row)
+
+-- integer zero is valid
+SELECT const_v7_11('0');
+ const_v7_11 
+-------------
+ t
+(1 row)
+
+-- float zero is valid
+SELECT const_v7_11('0');
+ const_v7_11 
+-------------
+ t
+(1 row)
+
+-- empty object is invalid
+SELECT const_v7_11('{}');
+ const_v7_11 
+-------------
+ f
+(1 row)
+
+-- empty array is invalid
+SELECT const_v7_11('[]');
+ const_v7_11 
+-------------
+ f
+(1 row)
+
+-- empty string is invalid
+SELECT const_v7_11('""');
+ const_v7_11 
+-------------
+ f
+(1 row)
+
+-- const with 1 does not match true
+-- true is invalid
+SELECT const_v7_12('true');
+ const_v7_12 
+-------------
+ f
+(1 row)
+
+-- integer one is valid
+SELECT const_v7_12('1');
+ const_v7_12 
+-------------
+ t
+(1 row)
+
+-- float one is valid
+SELECT const_v7_12('1');
+ const_v7_12 
+-------------
+ t
+(1 row)
+
+-- const with -2.0 matches integer and float types
+-- integer -2 is valid
+SELECT const_v7_13('-2');
+ const_v7_13 
+-------------
+ t
+(1 row)
+
+-- integer 2 is invalid
+SELECT const_v7_13('2');
+ const_v7_13 
+-------------
+ f
+(1 row)
+
+-- float -2.0 is valid
+SELECT const_v7_13('-2');
+ const_v7_13 
+-------------
+ t
+(1 row)
+
+-- float 2.0 is invalid
+SELECT const_v7_13('2');
+ const_v7_13 
+-------------
+ f
+(1 row)
+
+-- float -2.00001 is invalid
+SELECT const_v7_13('-2.00001');
+ const_v7_13 
+-------------
+ f
+(1 row)
+
+-- float and integers are equal up to 64-bit representation limits
+-- integer is valid
+SELECT const_v7_14('9007199254740992');
+ const_v7_14 
+-------------
+ t
+(1 row)
+
+-- integer minus one is invalid
+SELECT const_v7_14('9007199254740991');
+ const_v7_14 
+-------------
+ f
+(1 row)
+
+-- float is valid
+SELECT const_v7_14('9007199254740992');
+ const_v7_14 
+-------------
+ t
+(1 row)
+
+-- float minus one is invalid
+SELECT const_v7_14('9007199254740991');
+ const_v7_14 
+-------------
+ f
+(1 row)
+

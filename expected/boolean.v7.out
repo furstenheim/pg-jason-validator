@@ -1,0 +1,128 @@
+-- boolean schema 'true'
+-- number is valid
+SELECT boolean_v7_1('1');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- string is valid
+SELECT boolean_v7_1('"foo"');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- boolean true is valid
+SELECT boolean_v7_1('true');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- boolean false is valid
+SELECT boolean_v7_1('false');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- null is valid
+SELECT boolean_v7_1('null');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- object is valid
+SELECT boolean_v7_1('{"foo":"bar"}');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- empty object is valid
+SELECT boolean_v7_1('{}');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- array is valid
+SELECT boolean_v7_1('["foo"]');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- empty array is valid
+SELECT boolean_v7_1('[]');
+ boolean_v7_1 
+--------------
+ t
+(1 row)
+
+-- boolean schema 'false'
+-- number is invalid
+SELECT boolean_v7_2('1');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+
+-- string is invalid
+SELECT boolean_v7_2('"foo"');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+
+-- boolean true is invalid
+SELECT boolean_v7_2('true');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+
+-- boolean false is invalid
+SELECT boolean_v7_2('false');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+
+-- null is invalid
+SELECT boolean_v7_2('null');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+
+-- object is invalid
+SELECT boolean_v7_2('{"foo":"bar"}');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+
+-- empty object is invalid
+SELECT boolean_v7_2('{}');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+
+-- array is invalid
+SELECT boolean_v7_2('["foo"]');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+
+-- empty array is invalid
+SELECT boolean_v7_2('[]');
+ boolean_v7_2 
+--------------
+ f
+(1 row)
+

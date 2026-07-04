@@ -1,0 +1,136 @@
+-- additionalItems as schema
+-- additional items match schema
+SELECT additional_items_1('[null,2,3,4]');
+ additional_items_1 
+--------------------
+ t
+(1 row)
+
+-- additional items do not match schema
+SELECT additional_items_1('[null,2,3,"foo"]');
+ additional_items_1 
+--------------------
+ f
+(1 row)
+
+-- when items is schema, additionalItems does nothing
+-- valid with a array of type integers
+SELECT additional_items_v7_1('[1,2,3]');
+ additional_items_v7_1 
+-----------------------
+ t
+(1 row)
+
+-- invalid with a array of mixed types
+SELECT additional_items_v7_1('[1,"2","3"]');
+ additional_items_v7_1 
+-----------------------
+ f
+(1 row)
+
+-- when items is schema, boolean additionalItems does nothing
+-- all items match schema
+SELECT additional_items_2('[1,2,3,4,5]');
+ additional_items_2 
+--------------------
+ t
+(1 row)
+
+-- array of items with no additionalItems permitted
+-- empty array
+SELECT additional_items_3('[]');
+ additional_items_3 
+--------------------
+ t
+(1 row)
+
+-- fewer number of items present (1)
+SELECT additional_items_3('[1]');
+ additional_items_3 
+--------------------
+ t
+(1 row)
+
+-- fewer number of items present (2)
+SELECT additional_items_3('[1,2]');
+ additional_items_3 
+--------------------
+ t
+(1 row)
+
+-- equal number of items present
+SELECT additional_items_3('[1,2,3]');
+ additional_items_3 
+--------------------
+ t
+(1 row)
+
+-- additional items are not permitted
+SELECT additional_items_3('[1,2,3,4]');
+ additional_items_3 
+--------------------
+ f
+(1 row)
+
+-- additionalItems as false without items
+-- items defaults to empty schema so everything is valid
+SELECT additional_items_4('[1,2,3,4,5]');
+ additional_items_4 
+--------------------
+ t
+(1 row)
+
+-- ignores non-arrays
+SELECT additional_items_4('{"foo":"bar"}');
+ additional_items_4 
+--------------------
+ t
+(1 row)
+
+-- additionalItems are allowed by default
+-- only the first item is validated
+SELECT additional_items_5('[1,"foo",false]');
+ additional_items_5 
+--------------------
+ t
+(1 row)
+
+-- additionalItems does not look in applicators, valid case
+-- items defined in allOf are not examined
+SELECT additional_items_6('[1,null]');
+ additional_items_6 
+--------------------
+ t
+(1 row)
+
+-- additionalItems does not look in applicators, invalid case
+-- items defined in allOf are not examined
+SELECT additional_items_7('[1,"hello"]');
+ additional_items_7 
+--------------------
+ f
+(1 row)
+
+-- items validation adjusts the starting index for additionalItems
+-- valid items
+SELECT additional_items_8('["x",2,3]');
+ additional_items_8 
+--------------------
+ t
+(1 row)
+
+-- wrong type of second item
+SELECT additional_items_8('["x","y"]');
+ additional_items_8 
+--------------------
+ f
+(1 row)
+
+-- additionalItems with null instance elements
+-- allows null elements
+SELECT additional_items_9('[null]');
+ additional_items_9 
+--------------------
+ t
+(1 row)
+

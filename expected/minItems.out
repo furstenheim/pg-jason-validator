@@ -1,0 +1,29 @@
+-- minItems validation
+-- longer is valid
+SELECT misc_23('[1,2]');
+ misc_23 
+---------
+ t
+(1 row)
+
+-- exact length is valid
+SELECT misc_23('[1]');
+ misc_23 
+---------
+ t
+(1 row)
+
+-- too short is invalid
+SELECT misc_23('[]');
+ misc_23 
+---------
+ f
+(1 row)
+
+-- ignores non-arrays
+SELECT misc_23('""');
+ misc_23 
+---------
+ t
+(1 row)
+

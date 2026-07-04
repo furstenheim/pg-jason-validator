@@ -1,0 +1,58 @@
+-- maxProperties validation
+-- shorter is valid
+SELECT max_properties_1('{"foo":1}');
+ max_properties_1 
+------------------
+ t
+(1 row)
+
+-- exact length is valid
+SELECT max_properties_1('{"foo":1,"bar":2}');
+ max_properties_1 
+------------------
+ t
+(1 row)
+
+-- too long is invalid
+SELECT max_properties_1('{"foo":1,"bar":2,"baz":3}');
+ max_properties_1 
+------------------
+ f
+(1 row)
+
+-- ignores arrays
+SELECT max_properties_1('[1,2,3]');
+ max_properties_1 
+------------------
+ t
+(1 row)
+
+-- ignores strings
+SELECT max_properties_1('"foobar"');
+ max_properties_1 
+------------------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT max_properties_1('12');
+ max_properties_1 
+------------------
+ t
+(1 row)
+
+-- maxProperties = 0 means the object is empty
+-- no properties is valid
+SELECT max_properties_2('{}');
+ max_properties_2 
+------------------
+ t
+(1 row)
+
+-- one property is invalid
+SELECT max_properties_2('{"foo":1}');
+ max_properties_2 
+------------------
+ f
+(1 row)
+

@@ -1,0 +1,51 @@
+-- minLength validation
+-- longer is valid
+SELECT misc_7('"foo"');
+ misc_7 
+--------
+ t
+(1 row)
+
+-- exact length is valid
+SELECT misc_7('"fo"');
+ misc_7 
+--------
+ t
+(1 row)
+
+-- too short is invalid
+SELECT misc_7('"f"');
+ misc_7 
+--------
+ f
+(1 row)
+
+-- ignores non-strings
+SELECT misc_7('1');
+ misc_7 
+--------
+ t
+(1 row)
+
+-- one supplementary Unicode code point is not long enough
+SELECT misc_7('"💩"');
+ misc_7 
+--------
+ f
+(1 row)
+
+-- minLength validation with a decimal
+-- longer is valid
+SELECT misc_7('"foo"');
+ misc_7 
+--------
+ t
+(1 row)
+
+-- too short is invalid
+SELECT misc_7('"f"');
+ misc_7 
+--------
+ f
+(1 row)
+

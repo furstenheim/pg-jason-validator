@@ -1,0 +1,109 @@
+-- required validation
+-- present required property is valid
+SELECT required_1('{"foo":1}');
+ required_1 
+------------
+ t
+(1 row)
+
+-- non-present required property is invalid
+SELECT required_1('{"bar":1}');
+ required_1 
+------------
+ f
+(1 row)
+
+-- ignores arrays
+SELECT required_1('[]');
+ required_1 
+------------
+ t
+(1 row)
+
+-- ignores strings
+SELECT required_1('""');
+ required_1 
+------------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT required_1('12');
+ required_1 
+------------
+ t
+(1 row)
+
+-- required default validation
+-- not required by default
+SELECT required_2('{}');
+ required_2 
+------------
+ t
+(1 row)
+
+-- required with escaped characters
+-- object with all properties present is valid
+SELECT required_3('{"foo\nbar":1,"foo\"bar":1,"foo\\bar":1,"foo\rbar":1,"foo\tbar":1,"foo\fbar":1}');
+ required_3 
+------------
+ t
+(1 row)
+
+-- object with some properties missing is invalid
+SELECT required_3('{"foo\nbar":"1","foo\"bar":"1"}');
+ required_3 
+------------
+ f
+(1 row)
+
+-- required properties whose names are Javascript object property names
+-- ignores arrays
+SELECT required_4('[]');
+ required_4 
+------------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT required_4('12');
+ required_4 
+------------
+ t
+(1 row)
+
+-- none of the properties mentioned
+SELECT required_4('{}');
+ required_4 
+------------
+ f
+(1 row)
+
+-- __proto__ present
+SELECT required_4('{"__proto__":"foo"}');
+ required_4 
+------------
+ f
+(1 row)
+
+-- toString present
+SELECT required_4('{"toString":{"length":37}}');
+ required_4 
+------------
+ f
+(1 row)
+
+-- constructor present
+SELECT required_4('{"constructor":{"length":37}}');
+ required_4 
+------------
+ f
+(1 row)
+
+-- all present
+SELECT required_4('{"__proto__":12,"toString":{"length":"foo"},"constructor":37}');
+ required_4 
+------------
+ t
+(1 row)
+

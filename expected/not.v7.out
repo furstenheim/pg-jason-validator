@@ -1,0 +1,90 @@
+-- not
+-- allowed
+SELECT not_1('"foo"');
+ not_1 
+-------
+ t
+(1 row)
+
+-- disallowed
+SELECT not_1('1');
+ not_1 
+-------
+ f
+(1 row)
+
+-- not multiple types
+-- valid
+SELECT not_2('"foo"');
+ not_2 
+-------
+ t
+(1 row)
+
+-- mismatch
+SELECT not_2('1');
+ not_2 
+-------
+ f
+(1 row)
+
+-- other mismatch
+SELECT not_2('true');
+ not_2 
+-------
+ f
+(1 row)
+
+-- not more complex schema
+-- match
+SELECT not_3('1');
+ not_3 
+-------
+ t
+(1 row)
+
+-- other match
+SELECT not_3('{"foo":1}');
+ not_3 
+-------
+ t
+(1 row)
+
+-- mismatch
+SELECT not_3('{"foo":"bar"}');
+ not_3 
+-------
+ f
+(1 row)
+
+-- forbidden property
+-- property present
+SELECT not_4('{"foo":1,"bar":2}');
+ not_4 
+-------
+ f
+(1 row)
+
+-- property absent
+SELECT not_4('{"bar":1,"baz":2}');
+ not_4 
+-------
+ t
+(1 row)
+
+-- not with boolean schema true
+-- any value is invalid
+SELECT not_v7_1('"foo"');
+ not_v7_1 
+----------
+ f
+(1 row)
+
+-- not with boolean schema false
+-- any value is valid
+SELECT not_v7_2('"foo"');
+ not_v7_2 
+----------
+ t
+(1 row)
+

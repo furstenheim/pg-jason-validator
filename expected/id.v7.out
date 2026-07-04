@@ -1,0 +1,38 @@
+-- id inside an enum is not a real identifier
+-- exact match to enum, and type matches
+SELECT id_v7_1('{"$id":"https://localhost:1234/id/my_identifier.json","type":"null"}');
+ id_v7_1 
+---------
+ t
+(1 row)
+
+-- non-schema object containing a plain-name $id property
+-- skip traversing definition for a valid result
+SELECT id_v7_2('"skip not_a_real_anchor"');
+ id_v7_2 
+---------
+ t
+(1 row)
+
+-- const at const_not_anchor does not match
+SELECT id_v7_2('1');
+ id_v7_2 
+---------
+ f
+(1 row)
+
+-- non-schema object containing an $id property
+-- skip traversing definition for a valid result
+SELECT id_v7_3('"skip not_a_real_id"');
+ id_v7_3 
+---------
+ t
+(1 row)
+
+-- const at const_not_id does not match
+SELECT id_v7_3('1');
+ id_v7_3 
+---------
+ f
+(1 row)
+

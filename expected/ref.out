@@ -1,0 +1,186 @@
+-- root pointer ref
+-- match
+SELECT ref_1('{"foo":false}');
+ ref_1 
+-------
+ t
+(1 row)
+
+-- recursive match
+SELECT ref_1('{"foo":{"foo":false}}');
+ ref_1 
+-------
+ t
+(1 row)
+
+-- mismatch
+SELECT ref_1('{"bar":false}');
+ ref_1 
+-------
+ f
+(1 row)
+
+-- recursive mismatch
+SELECT ref_1('{"foo":{"bar":false}}');
+ ref_1 
+-------
+ f
+(1 row)
+
+-- relative pointer ref to object
+-- match
+SELECT ref_2('{"bar":3}');
+ ref_2 
+-------
+ t
+(1 row)
+
+-- mismatch
+SELECT ref_2('{"bar":true}');
+ ref_2 
+-------
+ f
+(1 row)
+
+-- relative pointer ref to array
+-- match array
+SELECT ref_3('[1,2]');
+ ref_3 
+-------
+ t
+(1 row)
+
+-- mismatch array
+SELECT ref_3('[1,"foo"]');
+ ref_3 
+-------
+ f
+(1 row)
+
+-- nested refs
+-- nested ref valid
+SELECT ref_4('5');
+ ref_4 
+-------
+ t
+(1 row)
+
+-- nested ref invalid
+SELECT ref_4('"a"');
+ ref_4 
+-------
+ f
+(1 row)
+
+-- ref overrides any sibling keywords
+-- ref valid
+SELECT ref_5('{"foo":[]}');
+ ref_5 
+-------
+ t
+(1 row)
+
+-- ref valid, maxItems ignored
+SELECT ref_5('{"foo":[1,2,3]}');
+ ref_5 
+-------
+ t
+(1 row)
+
+-- ref invalid
+SELECT ref_5('{"foo":"string"}');
+ ref_5 
+-------
+ f
+(1 row)
+
+-- property named $ref that is not a reference
+-- property named $ref valid
+SELECT ref_6('{"$ref":"a"}');
+ ref_6 
+-------
+ t
+(1 row)
+
+-- property named $ref invalid
+SELECT ref_6('{"$ref":2}');
+ ref_6 
+-------
+ f
+(1 row)
+
+-- property named $ref, containing an actual $ref
+-- property named $ref valid
+SELECT ref_7('{"$ref":"a"}');
+ ref_7 
+-------
+ t
+(1 row)
+
+-- property named $ref invalid
+SELECT ref_7('{"$ref":2}');
+ ref_7 
+-------
+ f
+(1 row)
+
+-- naive replacement of $ref with its destination is not correct
+-- do not evaluate the $ref inside the enum, matching any string
+SELECT ref_8('"this is a string"');
+ ref_8 
+-------
+ f
+(1 row)
+
+-- match the enum exactly
+SELECT ref_8('{"$ref":"#/definitions/a_string"}');
+ ref_8 
+-------
+ t
+(1 row)
+
+-- id with file URI still resolves pointers - *nix
+-- number is valid
+SELECT ref_9('1');
+ ref_9 
+-------
+ t
+(1 row)
+
+-- non-number is invalid
+SELECT ref_9('"a"');
+ ref_9 
+-------
+ f
+(1 row)
+
+-- id with file URI still resolves pointers - windows
+-- number is valid
+SELECT ref_10('1');
+ ref_10 
+--------
+ t
+(1 row)
+
+-- non-number is invalid
+SELECT ref_10('"a"');
+ ref_10 
+--------
+ f
+(1 row)
+
+-- empty tokens in $ref json-pointer
+-- number is valid
+SELECT ref_11('1');
+ ref_11 
+--------
+ t
+(1 row)
+
+-- non-number is invalid
+SELECT ref_11('"a"');
+ ref_11 
+--------
+ f
+(1 row)
+

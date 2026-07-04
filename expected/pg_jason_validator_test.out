@@ -1,0 +1,540 @@
+CREATE EXTENSION pg_jason_validator;
+SELECT misc_1('{}');
+ misc_1 
+--------
+ t
+(1 row)
+
+SELECT misc_2('1');
+ misc_2 
+--------
+ t
+(1 row)
+
+SELECT misc_2('{}');
+ misc_2 
+--------
+ f
+(1 row)
+
+SELECT misc_3('{}');
+ misc_3 
+--------
+ t
+(1 row)
+
+SELECT misc_3('2');
+ misc_3 
+--------
+ f
+(1 row)
+
+SELECT misc_3('{"a": 1}');
+ misc_3 
+--------
+ t
+(1 row)
+
+SELECT misc_4('2');
+ misc_4 
+--------
+ t
+(1 row)
+
+SELECT misc_5('2');
+ misc_5 
+--------
+ t
+(1 row)
+
+SELECT misc_6('1');
+ misc_6 
+--------
+ t
+(1 row)
+
+SELECT misc_6('{"a": 2}');
+ misc_6 
+--------
+ t
+(1 row)
+
+SELECT misc_6('{"a": 1}');
+ misc_6 
+--------
+ f
+(1 row)
+
+SELECT misc_7('"abc"');
+ misc_7 
+--------
+ t
+(1 row)
+
+SELECT misc_7('"a"');
+ misc_7 
+--------
+ f
+(1 row)
+
+SELECT misc_8('"a"');
+ misc_8 
+--------
+ t
+(1 row)
+
+SELECT misc_8('"abc"');
+ misc_8 
+--------
+ f
+(1 row)
+
+SELECT misc_9('{
+                                "a": "whatever",
+                                "x": 131
+                            }');
+ misc_9 
+--------
+ t
+(1 row)
+
+SELECT misc_9('{
+                                "a": true,
+                                "x": 1.1
+                            }');
+ misc_9 
+--------
+ f
+(1 row)
+
+SELECT misc_10('{
+                               "a": true,
+                               "b": null
+                           }');
+ misc_10 
+---------
+ t
+(1 row)
+
+SELECT misc_10('{
+                                "c": false,
+                                "d": 31
+                            }');
+ misc_10 
+---------
+ f
+(1 row)
+
+SELECT misc_10('{
+                                "c": false,
+                                "d": 31,
+                                "e": {"a": 1}
+                            }');
+ misc_10 
+---------
+ t
+(1 row)
+
+SELECT misc_11('{"foo": 1}');
+ misc_11 
+---------
+ t
+(1 row)
+
+SELECT misc_11('{"foo": "bar", "fooooo": 2}');
+ misc_11 
+---------
+ f
+(1 row)
+
+SELECT misc_12('{"foo": 1, "a": 2.5}');
+ misc_12 
+---------
+ f
+(1 row)
+
+SELECT misc_12('{"foo": 1, "a": 2}');
+ misc_12 
+---------
+ t
+(1 row)
+
+SELECT misc_13('{"foo": 1, "a": 2}');
+ misc_13 
+---------
+ t
+(1 row)
+
+SELECT misc_13('{"foo": 1, "a": 2, "b": false}');
+ misc_13 
+---------
+ t
+(1 row)
+
+SELECT misc_14('{"foo": 1, "a": 2, "b": false}');
+ misc_14 
+---------
+ t
+(1 row)
+
+SELECT misc_15('{"foo": 1, "a": 2, "b": false}');
+ misc_15 
+---------
+ f
+(1 row)
+
+SELECT misc_16('4');
+ misc_16 
+---------
+ t
+(1 row)
+
+SELECT misc_17('4.5');
+ misc_17 
+---------
+ t
+(1 row)
+
+SELECT misc_18('2');
+ misc_18 
+---------
+ f
+(1 row)
+
+SELECT misc_19('"a"');
+ misc_19 
+---------
+ t
+(1 row)
+
+SELECT misc_20('"My blacksmith produces excellent steel"');
+ misc_20 
+---------
+ t
+(1 row)
+
+SELECT misc_20('"I am no good at smitking, I''m afraid"');
+ misc_20 
+---------
+ f
+(1 row)
+
+SELECT misc_21('[1, 2, 3, 4]');
+ misc_21 
+---------
+ t
+(1 row)
+
+SELECT misc_22('[1, 2, 3, 4]');
+ misc_22 
+---------
+ f
+(1 row)
+
+SELECT misc_23('[1, {"bc": 2}, 3, 4]');
+ misc_23 
+---------
+ t
+(1 row)
+
+SELECT misc_24('[{"a": 1}, 2, 3, 4]');
+ misc_24 
+---------
+ f
+(1 row)
+
+SELECT misc_25('"dab"');
+ misc_25 
+---------
+ t
+(1 row)
+
+SELECT misc_25('{"a": 1, "b": 4, "c": 4, "d": 67, "e": 91}');
+ misc_25 
+---------
+ f
+(1 row)
+
+SELECT misc_26('{"a": 1, "b": 4, "c": 4, "d": 67, "e": 91}');
+ misc_26 
+---------
+ t
+(1 row)
+
+SELECT misc_27('{"a": 1, "b": 4, "c": 4, "d": 67, "e": 91}');
+ misc_27 
+---------
+ f
+(1 row)
+
+SELECT misc_28('2');
+ misc_28 
+---------
+ t
+(1 row)
+
+SELECT misc_29('2');
+ misc_29 
+---------
+ t
+(1 row)
+
+SELECT misc_30('2');
+ misc_30 
+---------
+ f
+(1 row)
+
+SELECT misc_31('2');
+ misc_31 
+---------
+ f
+(1 row)
+
+SELECT misc_32('2');
+ misc_32 
+---------
+ t
+(1 row)
+
+SELECT misc_33('[1, 2, 3]');
+ misc_33 
+---------
+ t
+(1 row)
+
+SELECT misc_34('[1, 2, 2]');
+ misc_34 
+---------
+ t
+(1 row)
+
+SELECT misc_33('[1, 2, 2]');
+ misc_33 
+---------
+ f
+(1 row)
+
+SELECT misc_33('[1, {"a": {"b": 1}}, {"a": {"b": 1}}]');
+ misc_33 
+---------
+ f
+(1 row)
+
+SELECT misc_33('[1, {"a": {"b": 1}}, {"a": {"b": 2}}]');
+ misc_33 
+---------
+ t
+(1 row)
+
+SELECT misc_35('2');
+ misc_35 
+---------
+ t
+(1 row)
+
+SELECT misc_36('2');
+ misc_36 
+---------
+ f
+(1 row)
+
+SELECT misc_37('2');
+ misc_37 
+---------
+ t
+(1 row)
+
+SELECT misc_38('2');
+ misc_38 
+---------
+ f
+(1 row)
+
+SELECT misc_39('2');
+ misc_39 
+---------
+ t
+(1 row)
+
+SELECT misc_40('2');
+ misc_40 
+---------
+ f
+(1 row)
+
+SELECT misc_5('2');
+ misc_5 
+--------
+ t
+(1 row)
+
+SELECT misc_41('2');
+ misc_41 
+---------
+ t
+(1 row)
+
+SELECT misc_42('2');
+ misc_42 
+---------
+ t
+(1 row)
+
+SELECT misc_43('2');
+ misc_43 
+---------
+ f
+(1 row)
+
+SELECT misc_44('2');
+ misc_44 
+---------
+ t
+(1 row)
+
+SELECT misc_5('2.5');
+ misc_5 
+--------
+ f
+(1 row)
+
+SELECT misc_45('2.5');
+ misc_45 
+---------
+ t
+(1 row)
+
+SELECT misc_46('{"a": 1}');
+ misc_46 
+---------
+ f
+(1 row)
+
+SELECT misc_47('{"a": 1, "b": 5}');
+ misc_47 
+---------
+ f
+(1 row)
+
+SELECT misc_48('{"a": 1, "b": 5}');
+ misc_48 
+---------
+ t
+(1 row)
+
+SELECT misc_49('{"a": 1, "b": 5}');
+ misc_49 
+---------
+ f
+(1 row)
+
+SELECT misc_50('{"a": 1, "b": 5}');
+ misc_50 
+---------
+ t
+(1 row)
+
+SELECT misc_51('{"a": 2.5}');
+ misc_51 
+---------
+ t
+(1 row)
+
+SELECT misc_52('{"a": 2}');
+ misc_52 
+---------
+ t
+(1 row)
+
+SELECT misc_52('{"a": 2.5}');
+ misc_52 
+---------
+ f
+(1 row)
+
+--- property is compared with length of key, in this case 4
+SELECT misc_53('{"a": 2}');
+ misc_53 
+---------
+ t
+(1 row)
+
+SELECT misc_54('{}');
+ misc_54 
+---------
+ f
+(1 row)
+
+SELECT misc_55('{}');
+ misc_55 
+---------
+ t
+(1 row)
+
+SELECT misc_54('{"a": 1}');
+ misc_54 
+---------
+ t
+(1 row)
+
+SELECT misc_56('{"a": 1}');
+ misc_56 
+---------
+ f
+(1 row)
+
+SELECT misc_56('{"a": 1, "b": 2}');
+ misc_56 
+---------
+ t
+(1 row)
+
+SELECT misc_56('1');
+ misc_56 
+---------
+ t
+(1 row)
+
+SELECT misc_57('[1, 2.5, 3.5]');
+ misc_57 
+---------
+ t
+(1 row)
+
+SELECT misc_58('[1, 2, 3]');
+ misc_58 
+---------
+ t
+(1 row)
+
+SELECT misc_58('[1, 2, 3.5]');
+ misc_58 
+---------
+ f
+(1 row)
+
+SELECT misc_59('[1, 2.5, 3.5]');
+ misc_59 
+---------
+ f
+(1 row)
+
+SELECT misc_60('[1, 2.5, 3.5]');
+ misc_60 
+---------
+ f
+(1 row)
+
+SELECT misc_61('[1, 2.5, 3.5]');
+ misc_61 
+---------
+ t
+(1 row)
+
+SELECT misc_52('{"b": 1}');
+ misc_52 
+---------
+ t
+(1 row)
+

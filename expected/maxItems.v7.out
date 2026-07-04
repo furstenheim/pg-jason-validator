@@ -1,0 +1,44 @@
+-- maxItems validation
+-- shorter is valid
+SELECT misc_22('[1]');
+ misc_22 
+---------
+ t
+(1 row)
+
+-- exact length is valid
+SELECT misc_22('[1,2]');
+ misc_22 
+---------
+ t
+(1 row)
+
+-- too long is invalid
+SELECT misc_22('[1,2,3]');
+ misc_22 
+---------
+ f
+(1 row)
+
+-- ignores non-arrays
+SELECT misc_22('"foobar"');
+ misc_22 
+---------
+ t
+(1 row)
+
+-- maxItems validation with a decimal
+-- shorter is valid
+SELECT misc_22('[1]');
+ misc_22 
+---------
+ t
+(1 row)
+
+-- too long is invalid
+SELECT misc_22('[1,2,3]');
+ misc_22 
+---------
+ f
+(1 row)
+

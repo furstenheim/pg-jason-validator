@@ -1,0 +1,259 @@
+-- dependencies
+-- neither
+SELECT dependencies_1('{}');
+ dependencies_1 
+----------------
+ t
+(1 row)
+
+-- nondependant
+SELECT dependencies_1('{"foo":1}');
+ dependencies_1 
+----------------
+ t
+(1 row)
+
+-- with dependency
+SELECT dependencies_1('{"foo":1,"bar":2}');
+ dependencies_1 
+----------------
+ t
+(1 row)
+
+-- missing dependency
+SELECT dependencies_1('{"bar":2}');
+ dependencies_1 
+----------------
+ f
+(1 row)
+
+-- ignores arrays
+SELECT dependencies_1('["bar"]');
+ dependencies_1 
+----------------
+ t
+(1 row)
+
+-- ignores strings
+SELECT dependencies_1('"foobar"');
+ dependencies_1 
+----------------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT dependencies_1('12');
+ dependencies_1 
+----------------
+ t
+(1 row)
+
+-- dependencies with empty array
+-- empty object
+SELECT dependencies_v7_1('{}');
+ dependencies_v7_1 
+-------------------
+ t
+(1 row)
+
+-- object with one property
+SELECT dependencies_v7_1('{"bar":2}');
+ dependencies_v7_1 
+-------------------
+ t
+(1 row)
+
+-- non-object is valid
+SELECT dependencies_v7_1('1');
+ dependencies_v7_1 
+-------------------
+ t
+(1 row)
+
+-- multiple dependencies
+-- neither
+SELECT dependencies_2('{}');
+ dependencies_2 
+----------------
+ t
+(1 row)
+
+-- nondependants
+SELECT dependencies_2('{"foo":1,"bar":2}');
+ dependencies_2 
+----------------
+ t
+(1 row)
+
+-- with dependencies
+SELECT dependencies_2('{"foo":1,"bar":2,"quux":3}');
+ dependencies_2 
+----------------
+ t
+(1 row)
+
+-- missing dependency
+SELECT dependencies_2('{"foo":1,"quux":2}');
+ dependencies_2 
+----------------
+ f
+(1 row)
+
+-- missing other dependency
+SELECT dependencies_2('{"bar":1,"quux":2}');
+ dependencies_2 
+----------------
+ f
+(1 row)
+
+-- missing both dependencies
+SELECT dependencies_2('{"quux":1}');
+ dependencies_2 
+----------------
+ f
+(1 row)
+
+-- multiple dependencies subschema
+-- valid
+SELECT dependencies_3('{"foo":1,"bar":2}');
+ dependencies_3 
+----------------
+ t
+(1 row)
+
+-- no dependency
+SELECT dependencies_3('{"foo":"quux"}');
+ dependencies_3 
+----------------
+ t
+(1 row)
+
+-- wrong type
+SELECT dependencies_3('{"foo":"quux","bar":2}');
+ dependencies_3 
+----------------
+ f
+(1 row)
+
+-- wrong type other
+SELECT dependencies_3('{"foo":2,"bar":"quux"}');
+ dependencies_3 
+----------------
+ f
+(1 row)
+
+-- wrong type both
+SELECT dependencies_3('{"foo":"quux","bar":"quux"}');
+ dependencies_3 
+----------------
+ f
+(1 row)
+
+-- dependencies with boolean subschemas
+-- object with property having schema true is valid
+SELECT dependencies_v7_2('{"foo":1}');
+ dependencies_v7_2 
+-------------------
+ t
+(1 row)
+
+-- object with property having schema false is invalid
+SELECT dependencies_v7_2('{"bar":2}');
+ dependencies_v7_2 
+-------------------
+ f
+(1 row)
+
+-- object with both properties is invalid
+SELECT dependencies_v7_2('{"foo":1,"bar":2}');
+ dependencies_v7_2 
+-------------------
+ f
+(1 row)
+
+-- empty object is valid
+SELECT dependencies_v7_2('{}');
+ dependencies_v7_2 
+-------------------
+ t
+(1 row)
+
+-- dependencies with escaped characters
+-- valid object 1
+SELECT dependencies_4('{"foo\nbar":1,"foo\rbar":2}');
+ dependencies_4 
+----------------
+ t
+(1 row)
+
+-- valid object 2
+SELECT dependencies_4('{"foo\tbar":1,"a":2,"b":3,"c":4}');
+ dependencies_4 
+----------------
+ t
+(1 row)
+
+-- valid object 3
+SELECT dependencies_4('{"foo''bar":1,"foo\"bar":2}');
+ dependencies_4 
+----------------
+ t
+(1 row)
+
+-- invalid object 1
+SELECT dependencies_4('{"foo\nbar":1,"foo":2}');
+ dependencies_4 
+----------------
+ f
+(1 row)
+
+-- invalid object 2
+SELECT dependencies_4('{"foo\tbar":1,"a":2}');
+ dependencies_4 
+----------------
+ f
+(1 row)
+
+-- invalid object 3
+SELECT dependencies_4('{"foo''bar":1}');
+ dependencies_4 
+----------------
+ f
+(1 row)
+
+-- invalid object 4
+SELECT dependencies_4('{"foo\"bar":2}');
+ dependencies_4 
+----------------
+ f
+(1 row)
+
+-- dependent subschema incompatible with root
+-- matches root
+SELECT dependencies_5('{"foo":1}');
+ dependencies_5 
+----------------
+ f
+(1 row)
+
+-- matches dependency
+SELECT dependencies_5('{"bar":1}');
+ dependencies_5 
+----------------
+ t
+(1 row)
+
+-- matches both
+SELECT dependencies_5('{"foo":1,"bar":2}');
+ dependencies_5 
+----------------
+ f
+(1 row)
+
+-- no dependency
+SELECT dependencies_5('{"baz":1}');
+ dependencies_5 
+----------------
+ t
+(1 row)
+

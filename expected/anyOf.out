@@ -1,0 +1,110 @@
+-- anyOf
+-- first anyOf valid
+SELECT any_of_1('1');
+ any_of_1 
+----------
+ t
+(1 row)
+
+-- second anyOf valid
+SELECT any_of_1('2.5');
+ any_of_1 
+----------
+ t
+(1 row)
+
+-- both anyOf valid
+SELECT any_of_1('3');
+ any_of_1 
+----------
+ t
+(1 row)
+
+-- neither anyOf valid
+SELECT any_of_1('1.5');
+ any_of_1 
+----------
+ f
+(1 row)
+
+-- anyOf with base schema
+-- mismatch base schema
+SELECT any_of_2('3');
+ any_of_2 
+----------
+ f
+(1 row)
+
+-- one anyOf valid
+SELECT any_of_2('"foobar"');
+ any_of_2 
+----------
+ t
+(1 row)
+
+-- both anyOf invalid
+SELECT any_of_2('"foo"');
+ any_of_2 
+----------
+ f
+(1 row)
+
+-- anyOf complex types
+-- first anyOf valid (complex)
+SELECT any_of_3('{"bar":2}');
+ any_of_3 
+----------
+ t
+(1 row)
+
+-- second anyOf valid (complex)
+SELECT any_of_3('{"foo":"baz"}');
+ any_of_3 
+----------
+ t
+(1 row)
+
+-- both anyOf valid (complex)
+SELECT any_of_3('{"foo":"baz","bar":2}');
+ any_of_3 
+----------
+ t
+(1 row)
+
+-- neither anyOf valid (complex)
+SELECT any_of_3('{"foo":2,"bar":"quux"}');
+ any_of_3 
+----------
+ f
+(1 row)
+
+-- anyOf with one empty schema
+-- string is valid
+SELECT any_of_4('"foo"');
+ any_of_4 
+----------
+ t
+(1 row)
+
+-- number is valid
+SELECT any_of_4('123');
+ any_of_4 
+----------
+ t
+(1 row)
+
+-- nested anyOf, to check validation semantics
+-- null is valid
+SELECT any_of_5('null');
+ any_of_5 
+----------
+ t
+(1 row)
+
+-- anything non-null is invalid
+SELECT any_of_5('123');
+ any_of_5 
+----------
+ f
+(1 row)
+

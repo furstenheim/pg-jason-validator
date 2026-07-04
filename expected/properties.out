@@ -1,0 +1,173 @@
+-- object properties validation
+-- both properties present and valid is valid
+SELECT properties_1('{"foo":1,"bar":"baz"}');
+ properties_1 
+--------------
+ t
+(1 row)
+
+-- one property invalid is invalid
+SELECT properties_1('{"foo":1,"bar":{}}');
+ properties_1 
+--------------
+ f
+(1 row)
+
+-- both properties invalid is invalid
+SELECT properties_1('{"foo":[],"bar":{}}');
+ properties_1 
+--------------
+ f
+(1 row)
+
+-- doesn't invalidate other properties
+SELECT properties_1('{"quux":[]}');
+ properties_1 
+--------------
+ t
+(1 row)
+
+-- ignores arrays
+SELECT properties_1('[]');
+ properties_1 
+--------------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT properties_1('12');
+ properties_1 
+--------------
+ t
+(1 row)
+
+-- properties, patternProperties, additionalProperties interaction
+-- property validates property
+SELECT properties_2('{"foo":[1,2]}');
+ properties_2 
+--------------
+ t
+(1 row)
+
+-- property invalidates property
+SELECT properties_2('{"foo":[1,2,3,4]}');
+ properties_2 
+--------------
+ f
+(1 row)
+
+-- patternProperty invalidates property
+SELECT properties_2('{"foo":[]}');
+ properties_2 
+--------------
+ f
+(1 row)
+
+-- patternProperty validates nonproperty
+SELECT properties_2('{"fxo":[1,2]}');
+ properties_2 
+--------------
+ t
+(1 row)
+
+-- patternProperty invalidates nonproperty
+SELECT properties_2('{"fxo":[]}');
+ properties_2 
+--------------
+ f
+(1 row)
+
+-- additionalProperty ignores property
+SELECT properties_2('{"bar":[]}');
+ properties_2 
+--------------
+ t
+(1 row)
+
+-- additionalProperty validates others
+SELECT properties_2('{"quux":3}');
+ properties_2 
+--------------
+ t
+(1 row)
+
+-- additionalProperty invalidates others
+SELECT properties_2('{"quux":"foo"}');
+ properties_2 
+--------------
+ f
+(1 row)
+
+-- properties with escaped characters
+-- object with all numbers is valid
+SELECT properties_3('{"foo\nbar":1,"foo\"bar":1,"foo\\bar":1,"foo\rbar":1,"foo\tbar":1,"foo\fbar":1}');
+ properties_3 
+--------------
+ t
+(1 row)
+
+-- object with strings is invalid
+SELECT properties_3('{"foo\nbar":"1","foo\"bar":"1","foo\\bar":"1","foo\rbar":"1","foo\tbar":"1","foo\fbar":"1"}');
+ properties_3 
+--------------
+ f
+(1 row)
+
+-- properties with null valued instance properties
+-- allows null values
+SELECT properties_4('{"foo":null}');
+ properties_4 
+--------------
+ t
+(1 row)
+
+-- properties whose names are Javascript object property names
+-- ignores arrays
+SELECT properties_5('[]');
+ properties_5 
+--------------
+ t
+(1 row)
+
+-- ignores other non-objects
+SELECT properties_5('12');
+ properties_5 
+--------------
+ t
+(1 row)
+
+-- none of the properties mentioned
+SELECT properties_5('{}');
+ properties_5 
+--------------
+ t
+(1 row)
+
+-- __proto__ not valid
+SELECT properties_5('{"__proto__":"foo"}');
+ properties_5 
+--------------
+ f
+(1 row)
+
+-- toString not valid
+SELECT properties_5('{"toString":{"length":37}}');
+ properties_5 
+--------------
+ f
+(1 row)
+
+-- constructor not valid
+SELECT properties_5('{"constructor":{"length":37}}');
+ properties_5 
+--------------
+ f
+(1 row)
+
+-- all present and valid
+SELECT properties_5('{"__proto__":12,"toString":{"length":"foo"},"constructor":37}');
+ properties_5 
+--------------
+ t
+(1 row)
+

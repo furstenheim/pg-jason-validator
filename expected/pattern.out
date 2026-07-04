@@ -1,0 +1,65 @@
+-- pattern validation
+-- a matching pattern is valid
+SELECT pattern_1('"aaa"');
+ pattern_1 
+-----------
+ t
+(1 row)
+
+-- a non-matching pattern is invalid
+SELECT pattern_1('"abc"');
+ pattern_1 
+-----------
+ f
+(1 row)
+
+-- ignores booleans
+SELECT pattern_1('true');
+ pattern_1 
+-----------
+ t
+(1 row)
+
+-- ignores integers
+SELECT pattern_1('123');
+ pattern_1 
+-----------
+ t
+(1 row)
+
+-- ignores floats
+SELECT pattern_1('1');
+ pattern_1 
+-----------
+ t
+(1 row)
+
+-- ignores objects
+SELECT pattern_1('{}');
+ pattern_1 
+-----------
+ t
+(1 row)
+
+-- ignores arrays
+SELECT pattern_1('[]');
+ pattern_1 
+-----------
+ t
+(1 row)
+
+-- ignores null
+SELECT pattern_1('null');
+ pattern_1 
+-----------
+ t
+(1 row)
+
+-- pattern is not anchored
+-- matches a substring
+SELECT pattern_2('"xxaayy"');
+ pattern_2 
+-----------
+ t
+(1 row)
+

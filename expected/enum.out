@@ -1,0 +1,226 @@
+-- simple enum validation
+-- one of the enum is valid
+SELECT enum_1('1');
+ enum_1 
+--------
+ t
+(1 row)
+
+-- something else is invalid
+SELECT enum_1('4');
+ enum_1 
+--------
+ f
+(1 row)
+
+-- heterogeneous enum validation
+-- one of the enum is valid
+SELECT enum_2('[]');
+ enum_2 
+--------
+ t
+(1 row)
+
+-- something else is invalid
+SELECT enum_2('null');
+ enum_2 
+--------
+ f
+(1 row)
+
+-- objects are deep compared
+SELECT enum_2('{"foo":false}');
+ enum_2 
+--------
+ f
+(1 row)
+
+-- valid object matches
+SELECT enum_2('{"foo":12}');
+ enum_2 
+--------
+ t
+(1 row)
+
+-- extra properties in object is invalid
+SELECT enum_2('{"foo":12,"boo":42}');
+ enum_2 
+--------
+ f
+(1 row)
+
+-- heterogeneous enum-with-null validation
+-- null is valid
+SELECT enum_3('null');
+ enum_3 
+--------
+ t
+(1 row)
+
+-- number is valid
+SELECT enum_3('6');
+ enum_3 
+--------
+ t
+(1 row)
+
+-- something else is invalid
+SELECT enum_3('"test"');
+ enum_3 
+--------
+ f
+(1 row)
+
+-- enums in properties
+-- both properties are valid
+SELECT enum_4('{"foo":"foo","bar":"bar"}');
+ enum_4 
+--------
+ t
+(1 row)
+
+-- wrong foo value
+SELECT enum_4('{"foo":"foot","bar":"bar"}');
+ enum_4 
+--------
+ f
+(1 row)
+
+-- wrong bar value
+SELECT enum_4('{"foo":"foo","bar":"bart"}');
+ enum_4 
+--------
+ f
+(1 row)
+
+-- missing optional property is valid
+SELECT enum_4('{"bar":"bar"}');
+ enum_4 
+--------
+ t
+(1 row)
+
+-- missing required property is invalid
+SELECT enum_4('{"foo":"foo"}');
+ enum_4 
+--------
+ f
+(1 row)
+
+-- missing all properties is invalid
+SELECT enum_4('{}');
+ enum_4 
+--------
+ f
+(1 row)
+
+-- enum with escaped characters
+-- member 1 is valid
+SELECT enum_5('"foo\nbar"');
+ enum_5 
+--------
+ t
+(1 row)
+
+-- member 2 is valid
+SELECT enum_5('"foo\rbar"');
+ enum_5 
+--------
+ t
+(1 row)
+
+-- another string is invalid
+SELECT enum_5('"abc"');
+ enum_5 
+--------
+ f
+(1 row)
+
+-- enum with false does not match 0
+-- false is valid
+SELECT enum_6('false');
+ enum_6 
+--------
+ t
+(1 row)
+
+-- integer zero is invalid
+SELECT enum_6('0');
+ enum_6 
+--------
+ f
+(1 row)
+
+-- float zero is invalid
+SELECT enum_6('0');
+ enum_6 
+--------
+ f
+(1 row)
+
+-- enum with true does not match 1
+-- true is valid
+SELECT enum_7('true');
+ enum_7 
+--------
+ t
+(1 row)
+
+-- integer one is invalid
+SELECT enum_7('1');
+ enum_7 
+--------
+ f
+(1 row)
+
+-- float one is invalid
+SELECT enum_7('1');
+ enum_7 
+--------
+ f
+(1 row)
+
+-- enum with 0 does not match false
+-- false is invalid
+SELECT enum_8('false');
+ enum_8 
+--------
+ f
+(1 row)
+
+-- integer zero is valid
+SELECT enum_8('0');
+ enum_8 
+--------
+ t
+(1 row)
+
+-- float zero is valid
+SELECT enum_8('0');
+ enum_8 
+--------
+ t
+(1 row)
+
+-- enum with 1 does not match true
+-- true is invalid
+SELECT enum_9('true');
+ enum_9 
+--------
+ f
+(1 row)
+
+-- integer one is valid
+SELECT enum_9('1');
+ enum_9 
+--------
+ t
+(1 row)
+
+-- float one is valid
+SELECT enum_9('1');
+ enum_9 
+--------
+ t
+(1 row)
+

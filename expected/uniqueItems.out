@@ -1,0 +1,489 @@
+-- uniqueItems validation
+-- unique array of integers is valid
+SELECT misc_33('[1,2]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- non-unique array of integers is invalid
+SELECT misc_33('[1,1]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- non-unique array of more than two integers is invalid
+SELECT misc_33('[1,2,1]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- numbers are unique if mathematically unequal
+SELECT misc_33('[1,1,1]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- false is not equal to zero
+SELECT misc_33('[0,false]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- true is not equal to one
+SELECT misc_33('[1,true]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- unique array of strings is valid
+SELECT misc_33('["foo","bar","baz"]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- non-unique array of strings is invalid
+SELECT misc_33('["foo","bar","foo"]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- unique array of objects is valid
+SELECT misc_33('[{"foo":"bar"},{"foo":"baz"}]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- non-unique array of objects is invalid
+SELECT misc_33('[{"foo":"bar"},{"foo":"bar"}]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- property order of array of objects is ignored
+SELECT misc_33('[{"foo":"bar","bar":"foo"},{"bar":"foo","foo":"bar"}]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- unique array of nested objects is valid
+SELECT misc_33('[{"foo":{"bar":{"baz":true}}},{"foo":{"bar":{"baz":false}}}]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- non-unique array of nested objects is invalid
+SELECT misc_33('[{"foo":{"bar":{"baz":true}}},{"foo":{"bar":{"baz":true}}}]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- unique array of arrays is valid
+SELECT misc_33('[["foo"],["bar"]]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- non-unique array of arrays is invalid
+SELECT misc_33('[["foo"],["foo"]]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- non-unique array of more than two arrays is invalid
+SELECT misc_33('[["foo"],["bar"],["foo"]]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- 1 and true are unique
+SELECT misc_33('[1,true]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- 0 and false are unique
+SELECT misc_33('[0,false]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- [1] and [true] are unique
+SELECT misc_33('[[1],[true]]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- [0] and [false] are unique
+SELECT misc_33('[[0],[false]]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- nested [1] and [true] are unique
+SELECT misc_33('[[[1],"foo"],[[true],"foo"]]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- nested [0] and [false] are unique
+SELECT misc_33('[[[0],"foo"],[[false],"foo"]]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- unique heterogeneous types are valid
+SELECT misc_33('[{},[1],true,null,1,"{}"]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- non-unique heterogeneous types are invalid
+SELECT misc_33('[{},[1],true,null,{},1]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- different objects are unique
+SELECT misc_33('[{"a":1,"b":2},{"a":2,"b":1}]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- objects are non-unique despite key order
+SELECT misc_33('[{"a":1,"b":2},{"b":2,"a":1}]');
+ misc_33 
+---------
+ f
+(1 row)
+
+-- {"a": false} and {"a": 0} are unique
+SELECT misc_33('[{"a":false},{"a":0}]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- {"a": true} and {"a": 1} are unique
+SELECT misc_33('[{"a":true},{"a":1}]');
+ misc_33 
+---------
+ t
+(1 row)
+
+-- uniqueItems with an array of items
+-- [false, true] from items array is valid
+SELECT unique_items_1('[false,true]');
+ unique_items_1 
+----------------
+ t
+(1 row)
+
+-- [true, false] from items array is valid
+SELECT unique_items_1('[true,false]');
+ unique_items_1 
+----------------
+ t
+(1 row)
+
+-- [false, false] from items array is not valid
+SELECT unique_items_1('[false,false]');
+ unique_items_1 
+----------------
+ f
+(1 row)
+
+-- [true, true] from items array is not valid
+SELECT unique_items_1('[true,true]');
+ unique_items_1 
+----------------
+ f
+(1 row)
+
+-- unique array extended from [false, true] is valid
+SELECT unique_items_1('[false,true,"foo","bar"]');
+ unique_items_1 
+----------------
+ t
+(1 row)
+
+-- unique array extended from [true, false] is valid
+SELECT unique_items_1('[true,false,"foo","bar"]');
+ unique_items_1 
+----------------
+ t
+(1 row)
+
+-- non-unique array extended from [false, true] is not valid
+SELECT unique_items_1('[false,true,"foo","foo"]');
+ unique_items_1 
+----------------
+ f
+(1 row)
+
+-- non-unique array extended from [true, false] is not valid
+SELECT unique_items_1('[true,false,"foo","foo"]');
+ unique_items_1 
+----------------
+ f
+(1 row)
+
+-- uniqueItems with an array of items and additionalItems=false
+-- [false, true] from items array is valid
+SELECT unique_items_2('[false,true]');
+ unique_items_2 
+----------------
+ t
+(1 row)
+
+-- [true, false] from items array is valid
+SELECT unique_items_2('[true,false]');
+ unique_items_2 
+----------------
+ t
+(1 row)
+
+-- [false, false] from items array is not valid
+SELECT unique_items_2('[false,false]');
+ unique_items_2 
+----------------
+ f
+(1 row)
+
+-- [true, true] from items array is not valid
+SELECT unique_items_2('[true,true]');
+ unique_items_2 
+----------------
+ f
+(1 row)
+
+-- extra items are invalid even if unique
+SELECT unique_items_2('[false,true,null]');
+ unique_items_2 
+----------------
+ f
+(1 row)
+
+-- uniqueItems=false validation
+-- unique array of integers is valid
+SELECT misc_34('[1,2]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- non-unique array of integers is valid
+SELECT misc_34('[1,1]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- numbers are unique if mathematically unequal
+SELECT misc_34('[1,1,1]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- false is not equal to zero
+SELECT misc_34('[0,false]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- true is not equal to one
+SELECT misc_34('[1,true]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- unique array of objects is valid
+SELECT misc_34('[{"foo":"bar"},{"foo":"baz"}]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- non-unique array of objects is valid
+SELECT misc_34('[{"foo":"bar"},{"foo":"bar"}]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- unique array of nested objects is valid
+SELECT misc_34('[{"foo":{"bar":{"baz":true}}},{"foo":{"bar":{"baz":false}}}]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- non-unique array of nested objects is valid
+SELECT misc_34('[{"foo":{"bar":{"baz":true}}},{"foo":{"bar":{"baz":true}}}]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- unique array of arrays is valid
+SELECT misc_34('[["foo"],["bar"]]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- non-unique array of arrays is valid
+SELECT misc_34('[["foo"],["foo"]]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- 1 and true are unique
+SELECT misc_34('[1,true]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- 0 and false are unique
+SELECT misc_34('[0,false]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- unique heterogeneous types are valid
+SELECT misc_34('[{},[1],true,null,1]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- non-unique heterogeneous types are valid
+SELECT misc_34('[{},[1],true,null,{},1]');
+ misc_34 
+---------
+ t
+(1 row)
+
+-- uniqueItems=false with an array of items
+-- [false, true] from items array is valid
+SELECT unique_items_3('[false,true]');
+ unique_items_3 
+----------------
+ t
+(1 row)
+
+-- [true, false] from items array is valid
+SELECT unique_items_3('[true,false]');
+ unique_items_3 
+----------------
+ t
+(1 row)
+
+-- [false, false] from items array is valid
+SELECT unique_items_3('[false,false]');
+ unique_items_3 
+----------------
+ t
+(1 row)
+
+-- [true, true] from items array is valid
+SELECT unique_items_3('[true,true]');
+ unique_items_3 
+----------------
+ t
+(1 row)
+
+-- unique array extended from [false, true] is valid
+SELECT unique_items_3('[false,true,"foo","bar"]');
+ unique_items_3 
+----------------
+ t
+(1 row)
+
+-- unique array extended from [true, false] is valid
+SELECT unique_items_3('[true,false,"foo","bar"]');
+ unique_items_3 
+----------------
+ t
+(1 row)
+
+-- non-unique array extended from [false, true] is valid
+SELECT unique_items_3('[false,true,"foo","foo"]');
+ unique_items_3 
+----------------
+ t
+(1 row)
+
+-- non-unique array extended from [true, false] is valid
+SELECT unique_items_3('[true,false,"foo","foo"]');
+ unique_items_3 
+----------------
+ t
+(1 row)
+
+-- uniqueItems=false with an array of items and additionalItems=false
+-- [false, true] from items array is valid
+SELECT unique_items_4('[false,true]');
+ unique_items_4 
+----------------
+ t
+(1 row)
+
+-- [true, false] from items array is valid
+SELECT unique_items_4('[true,false]');
+ unique_items_4 
+----------------
+ t
+(1 row)
+
+-- [false, false] from items array is valid
+SELECT unique_items_4('[false,false]');
+ unique_items_4 
+----------------
+ t
+(1 row)
+
+-- [true, true] from items array is valid
+SELECT unique_items_4('[true,true]');
+ unique_items_4 
+----------------
+ t
+(1 row)
+
+-- extra items are invalid even if unique
+SELECT unique_items_4('[false,true,null]');
+ unique_items_4 
+----------------
+ f
+(1 row)
+

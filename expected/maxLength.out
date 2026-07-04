@@ -1,0 +1,36 @@
+-- maxLength validation
+-- shorter is valid
+SELECT misc_8('"f"');
+ misc_8 
+--------
+ t
+(1 row)
+
+-- exact length is valid
+SELECT misc_8('"fo"');
+ misc_8 
+--------
+ t
+(1 row)
+
+-- too long is invalid
+SELECT misc_8('"foo"');
+ misc_8 
+--------
+ f
+(1 row)
+
+-- ignores non-strings
+SELECT misc_8('100');
+ misc_8 
+--------
+ t
+(1 row)
+
+-- two supplementary Unicode code points is long enough
+SELECT misc_8('"💩💩"');
+ misc_8 
+--------
+ t
+(1 row)
+
