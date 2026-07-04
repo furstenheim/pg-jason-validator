@@ -96,6 +96,14 @@ Differences that follow from the compile-time model:
   every result was cross-checked against the reference implementation's
   expected outputs).
 
+## Benchmark
+
+`tools/benchmark/` contains a Docker-based benchmark that validates the
+[frosch twitter dataset](https://frosch.cosy.sbg.ac.at/datasets/json/twitter)
+(downloaded at run time) with a generated function from this extension,
+`is_jsonb_valid`, and `pg_jsonschema` in both its per-row and compiled-schema
+modes. See [tools/benchmark/README.md](tools/benchmark/README.md).
+
 ## CI
 
 Same setup as `is_jsonb_valid`: the pgxn-tools container builds and runs the
