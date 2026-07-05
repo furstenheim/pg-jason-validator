@@ -1,6 +1,10 @@
 # Benchmark image: PostgreSQL 16 with the four validators installed.
 # Build from the repository root:
 #   docker build -f tools/benchmark/Dockerfile -t pg_jason_validator_bench .
+#
+# validate_tweet() is NOT built here: the container entry point downloads
+# the dataset, identifies its schema and compiles the validator from it at
+# run time, so the image only carries the extension sources and toolchain.
 FROM postgres:16-bookworm
 
 ARG PG_JSONSCHEMA_VERSION=0.3.4
@@ -23,25 +27,19 @@ RUN arch="$(dpkg --print-architecture)" \
 
 # is_jsonb_valid: the runtime-schema reference implementation
 RUN git clone --depth 1 https://github.com/furstenheim/is_jsonb_valid /tmp/is_jsonb_valid \
-    && make -C /tmp/is_jsonb_valid install \
+    && make -C /tmp/is_jsonb_valid install with_llvm=no \
     && rm -rf /tmp/is_jsonb_valid
 
-# pg_jason_validator, built with a single validator (validate_tweet)
-# generated from the benchmark tweet schema
-COPY Makefile pg_jason_validator.control validator_macros.h /tmp/pg_jason_validator/
-COPY tools/generate_validators.py /tmp/pg_jason_validator/tools/
-COPY tools/benchmark/tweet-schema.json /tmp/pg_jason_validator/
-RUN cd /tmp/pg_jason_validator \
-    && python3 -c "import json; \
-        schema = json.load(open('tweet-schema.json')); \
-        json.dump([{'name': 'validate_tweet', 'schema': schema}], open('validators.json', 'w'))" \
-    && make install \
-    && rm -rf /tmp/pg_jason_validator
+# pg_jason_validator sources; compiled by entrypoint.sh once the schema of
+# the downloaded dataset is known
+COPY Makefile pg_jason_validator.control validator_macros.h /opt/pg_jason_validator/
+COPY tools/generate_validators.py /opt/pg_jason_validator/tools/
 
 COPY tools/benchmark/load_tweets.py /usr/local/bin/load_tweets.py
+COPY tools/benchmark/infer_schema.py /usr/local/bin/infer_schema.py
 COPY tools/benchmark/bench.sh /usr/local/bin/bench.sh
-COPY tools/benchmark/tweet-schema.json /bench/tweet-schema.json
-RUN chmod +x /usr/local/bin/bench.sh && chown -R postgres:postgres /bench
+COPY tools/benchmark/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/bench.sh /usr/local/bin/entrypoint.sh \
+    && mkdir -p /bench && chown postgres:postgres /bench
 
-USER postgres
-ENTRYPOINT ["/usr/local/bin/bench.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

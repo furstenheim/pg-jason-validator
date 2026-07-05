@@ -1,0 +1,33 @@
+name: Benchmark
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: 'timed runs per implementation'
+        required: false
+        default: '5'
+      scale:
+        description: 'copies of the dataset to load'
+        required: false
+        default: '1'
+jobs:
+  benchmark:
+    name: 🏁 tweet validation benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run benchmark
+        env:
+          RUNS: ${{ inputs.runs }}
+          SCALE: ${{ inputs.scale }}
+        run: tools/benchmark/run.sh | tee bench.log
+      - name: Publish summary
+        if: always()
+        run: |
+          {
+            echo '## Tweet validation benchmark'
+            echo '```'
+            sed -n '/== benchmark:/,$p' bench.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

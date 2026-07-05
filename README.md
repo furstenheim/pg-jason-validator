@@ -102,7 +102,10 @@ Differences that follow from the compile-time model:
 [frosch twitter dataset](https://frosch.cosy.sbg.ac.at/datasets/json/twitter)
 (downloaded at run time) with a generated function from this extension,
 `is_jsonb_valid`, and `pg_jsonschema` in both its per-row and compiled-schema
-modes. See [tools/benchmark/README.md](tools/benchmark/README.md).
+modes. The schema is identified from the dataset itself (strict, with
+`additionalProperties: false`) and compiled into `validate_tweet()` inside
+the container. See [tools/benchmark/README.md](tools/benchmark/README.md);
+it can also be launched manually from the Actions tab (Benchmark workflow).
 
 ## CI
 

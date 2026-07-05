@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
-# Benchmark entry point, run inside the Docker image as the postgres user.
+# Benchmark body, run as the postgres user by entrypoint.sh, which already
+# downloaded the dataset ($DATASET_DIR), identified its schema
+# (/bench/tweet-schema.json) and compiled validate_tweet() from it.
 #
-# Downloads the twitter dataset at run time, loads it into a scratch
-# PostgreSQL instance and times four ways of validating every tweet against
-# the same JSON schema (tools/benchmark/tweet-schema.json):
+# Loads every tweet into a scratch PostgreSQL instance and times four ways
+# of validating them against the same schema:
 #
-#   1. pg_jason_validator  - validate_tweet(data), schema compiled to C at build time
+#   1. pg_jason_validator  - validate_tweet(data), schema compiled to C
 #   2. is_jsonb_valid      - is_jsonb_valid(schema, data), schema interpreted per row
 #   3. pg_jsonschema       - jsonb_matches_schema(schema, data), schema compiled per row
 #   4. pg_jsonschema/comp. - jsonb_matches_compiled_schema(schema::jsonschema, data),
 #                            schema compiled once per query call site
 set -euo pipefail
 
-DATASET_GIT_URL="${DATASET_GIT_URL:-https://frosch.cosy.sbg.ac.at/datasets/json/twitter.git}"
-DATASET_DIR="${DATASET_DIR:-}"   # set to a mounted directory of .json files to skip the download
 SCALE="${SCALE:-1}"              # total copies of the dataset to load
 RUNS="${RUNS:-5}"                # timed repetitions per implementation
 
@@ -26,16 +25,7 @@ if ! command -v initdb >/dev/null 2>&1; then
     export PATH="/usr/lib/postgresql/${PG_MAJOR:-16}/bin:$PATH"
 fi
 
-if [ -z "$DATASET_DIR" ]; then
-    echo "== downloading dataset from $DATASET_GIT_URL =="
-    git clone --depth 1 "$DATASET_GIT_URL" /bench/dataset
-    DATASET_DIR=/bench/dataset
-fi
 mapfile -t JSON_FILES < <(find "$DATASET_DIR" -name '*.json' -size +0 | sort)
-if [ "${#JSON_FILES[@]}" -eq 0 ]; then
-    echo "no .json files found in $DATASET_DIR" >&2
-    exit 1
-fi
 echo "== dataset files: ${JSON_FILES[*]} =="
 
 echo "== starting scratch postgres =="
@@ -89,7 +79,6 @@ run_ms() {
 echo
 echo "== benchmark: $RUNS timed runs each, after one warmup =="
 printf '%-38s %13s %12s %12s %10s\n' implementation valid/total "min ms" "median ms" rows/s
-RESULTS=()
 for i in "${!QUERIES[@]}"; do
     sql=${QUERIES[$i]}
     valid=$(psql -XqAt -c "$sql")   # warmup + semantics check
@@ -107,8 +96,8 @@ print("%.1f %.1f" % (t[0], median))')
     printf '%-38s %13s %12s %12s %10s\n' "${LABELS[$i]}" "$valid/$ROWS" "$tmin" "$tmedian" "$rate"
 done
 echo
-echo "(valid/total differs slightly between implementations where their"
-echo " JSON-Schema semantics differ; large gaps would mean the comparison"
-echo " is not validating equivalent work)"
+echo "(the schema is identified from the dataset itself, so valid/total"
+echo " should equal $ROWS/$ROWS everywhere; a gap means the implementations"
+echo " disagree on JSON-Schema semantics for this data)"
 
 pg_ctl -D "$PGDATA" stop >/dev/null
