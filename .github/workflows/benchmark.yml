@@ -23,6 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run benchmark
+        # explicit bash so pipefail is on and a failed benchmark fails the job
+        shell: bash
         env:
           RUNS: ${{ inputs.runs || '5' }}
           SCALE: ${{ inputs.scale || '1' }}

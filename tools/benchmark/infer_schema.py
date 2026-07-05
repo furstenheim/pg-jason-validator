@@ -84,17 +84,29 @@ class Node:
 
 
 def documents(path):
-    with open(path, encoding="utf-8") as f:
+    with open(path, encoding="utf-8", errors="replace") as f:
         text = f.read().strip()
     if not text:
         return
+    if text.startswith("version https://git-lfs"):
+        sys.exit("%s is a Git LFS pointer, not the data: clone with git-lfs installed"
+                 % path)
     try:
         doc = json.loads(text)
     except json.JSONDecodeError:
-        for raw in text.splitlines():
+        # not a single document; try newline-delimited JSON
+        docs = []
+        for n, raw in enumerate(text.splitlines(), 1):
             raw = raw.strip()
-            if raw:
-                yield json.loads(raw)
+            if not raw:
+                continue
+            try:
+                docs.append(json.loads(raw))
+            except json.JSONDecodeError:
+                print("skipping %s: not JSON or NDJSON (line %d)" % (path, n),
+                      file=sys.stderr)
+                return
+        yield from docs
         return
     if isinstance(doc, dict) and isinstance(doc.get("statuses"), list):
         doc = doc["statuses"]

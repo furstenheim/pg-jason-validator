@@ -13,10 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         postgresql-server-dev-$PG_MAJOR \
         git \
+        git-lfs \
         curl \
         ca-certificates \
         python3 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && git lfs install --system
 
 # pg_jsonschema: prebuilt release package
 RUN arch="$(dpkg --print-architecture)" \

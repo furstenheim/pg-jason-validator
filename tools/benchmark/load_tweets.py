@@ -18,29 +18,46 @@ def emit(doc):
     sys.stdout.write(line.replace("\\", "\\\\") + "\n")
 
 
-def load(path):
-    with open(path, encoding="utf-8") as f:
+def documents(path):
+    # keep in sync with infer_schema.py so both tools see the same documents
+    with open(path, encoding="utf-8", errors="replace") as f:
         text = f.read().strip()
     if not text:
-        return 0
+        return
+    if text.startswith("version https://git-lfs"):
+        sys.exit("%s is a Git LFS pointer, not the data: clone with git-lfs installed"
+                 % path)
     try:
         doc = json.loads(text)
     except json.JSONDecodeError:
-        count = 0
-        for raw in text.splitlines():
+        # not a single document; try newline-delimited JSON
+        docs = []
+        for n, raw in enumerate(text.splitlines(), 1):
             raw = raw.strip()
-            if raw:
-                emit(json.loads(raw))
-                count += 1
-        return count
+            if not raw:
+                continue
+            try:
+                docs.append(json.loads(raw))
+            except json.JSONDecodeError:
+                print("skipping %s: not JSON or NDJSON (line %d)" % (path, n),
+                      file=sys.stderr)
+                return
+        yield from docs
+        return
     if isinstance(doc, dict) and isinstance(doc.get("statuses"), list):
         doc = doc["statuses"]
     if isinstance(doc, list):
-        for tweet in doc:
-            emit(tweet)
-        return len(doc)
-    emit(doc)
-    return 1
+        yield from doc
+    else:
+        yield doc
+
+
+def load(path):
+    count = 0
+    for doc in documents(path):
+        emit(doc)
+        count += 1
+    return count
 
 
 def main():

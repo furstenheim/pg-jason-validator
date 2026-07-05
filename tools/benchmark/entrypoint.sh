@@ -19,6 +19,7 @@ if [ "${#JSON_FILES[@]}" -eq 0 ]; then
     echo "no .json files found in $DATASET_DIR" >&2
     exit 1
 fi
+ls -l "${JSON_FILES[@]}"
 
 if [ -n "${SCHEMA_FILE:-}" ]; then
     echo "== using provided schema $SCHEMA_FILE =="
