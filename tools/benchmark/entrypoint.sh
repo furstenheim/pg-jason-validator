@@ -11,7 +11,18 @@ export DATASET_DIR="${DATASET_DIR:-}"
 
 if [ -z "$DATASET_DIR" ]; then
     echo "== downloading dataset from $DATASET_GIT_URL =="
-    git clone --depth 1 "$DATASET_GIT_URL" /bench/dataset
+    # the dataset host is occasionally unreachable; retry with backoff
+    attempt=1
+    until git clone --depth 1 "$DATASET_GIT_URL" /bench/dataset; do
+        if [ "$attempt" -ge 4 ]; then
+            echo "failed to clone $DATASET_GIT_URL after $attempt attempts" >&2
+            exit 1
+        fi
+        rm -rf /bench/dataset
+        sleep $((30 * attempt))
+        attempt=$((attempt + 1))
+        echo "== retrying download (attempt $attempt) =="
+    done
     export DATASET_DIR=/bench/dataset
 fi
 mapfile -t JSON_FILES < <(find "$DATASET_DIR" -name '*.json' -size +0 | sort)
