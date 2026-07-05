@@ -10,6 +10,10 @@ on:
         description: 'copies of the dataset to load'
         required: false
         default: '1'
+  push:
+    # alternative trigger for tooling without actions:write permission:
+    # committing a bump to this file starts a run with the default inputs
+    paths: ['.github/benchmark-trigger']
 jobs:
   benchmark:
     name: 🏁 tweet validation benchmark
@@ -19,8 +23,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run benchmark
         env:
-          RUNS: ${{ inputs.runs }}
-          SCALE: ${{ inputs.scale }}
+          RUNS: ${{ inputs.runs || '5' }}
+          SCALE: ${{ inputs.scale || '1' }}
         run: tools/benchmark/run.sh | tee bench.log
       - name: Publish summary
         if: always()
