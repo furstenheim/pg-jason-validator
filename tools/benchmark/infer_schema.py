@@ -19,6 +19,7 @@ unions in a fixed canonical order.
 
 import json
 import sys
+from decimal import Decimal
 
 TYPE_ORDER = ["object", "array", "string", "integer", "number", "boolean", "null"]
 
@@ -55,6 +56,9 @@ class Node:
             self.types.add("integer")
         elif isinstance(value, float):
             self.types.add("number")
+        elif isinstance(value, Decimal):
+            # ijson yields Decimal for all numbers; classify by whether it is whole
+            self.types.add("integer" if value % 1 == 0 else "number")
         elif isinstance(value, str):
             self.types.add("string")
         elif value is None:
@@ -85,35 +89,52 @@ class Node:
 
 def documents(path):
     with open(path, encoding="utf-8", errors="replace") as f:
-        text = f.read().strip()
-    if not text:
-        return
-    if text.startswith("version https://git-lfs"):
-        sys.exit("%s is a Git LFS pointer, not the data: clone with git-lfs installed"
-                 % path)
-    try:
-        doc = json.loads(text)
-    except json.JSONDecodeError:
-        # not a single document; try newline-delimited JSON
-        docs = []
-        for n, raw in enumerate(text.splitlines(), 1):
-            raw = raw.strip()
-            if not raw:
-                continue
-            try:
-                docs.append(json.loads(raw))
-            except json.JSONDecodeError:
-                print("skipping %s: not JSON or NDJSON (line %d)" % (path, n),
-                      file=sys.stderr)
-                return
-        yield from docs
-        return
-    if isinstance(doc, dict) and isinstance(doc.get("statuses"), list):
-        doc = doc["statuses"]
-    if isinstance(doc, list):
-        yield from doc
-    else:
-        yield doc
+        # Check for LFS pointer without loading the whole file
+        head = f.read(512)
+        if not head.strip():
+            return
+        if head.lstrip().startswith("version https://git-lfs"):
+            sys.exit("%s is a Git LFS pointer, not the data: clone with git-lfs installed"
+                     % path)
+
+        # If the first non-empty line is valid JSON, treat the file as NDJSON and
+        # stream it line-by-line to avoid loading multi-gigabyte files into memory.
+        f.seek(0)
+        first_raw = next((l.strip() for l in f if l.strip()), "")
+        try:
+            json.loads(first_raw)
+            f.seek(0)
+            for n, raw in enumerate(f, 1):
+                raw = raw.strip()
+                if not raw:
+                    continue
+                try:
+                    yield json.loads(raw)
+                except json.JSONDecodeError:
+                    print("skipping %s: not JSON or NDJSON (line %d)" % (path, n),
+                          file=sys.stderr)
+                    return
+            return
+        except json.JSONDecodeError:
+            pass
+
+        # Not NDJSON — stream the JSON array/object with ijson to avoid loading
+        # the whole file into memory.
+        import ijson
+        first_char = head.lstrip()[0]
+        f.seek(0)
+        if first_char == '[':
+            yield from ijson.items(f, 'item')
+        else:
+            # {"statuses": [...]} wrapper or a single small object
+            count = 0
+            for item in ijson.items(f, 'statuses.item'):
+                yield item
+                count += 1
+            if count == 0:
+                f.seek(0)
+                doc = json.loads(f.read())
+                yield doc
 
 
 def main():

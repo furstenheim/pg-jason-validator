@@ -11,13 +11,15 @@
 #                     the container to skip the download
 #   SCHEMA_CACHE      host JSON-schema file to use instead of identifying
 #                     the schema from the dataset
+#   START_AT=0        skip benchmarks with index < START_AT (0=all, 3=compiled only)
+#   SKIP_LOAD=0       set to 1 to reuse a running postgres with data already loaded
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."
 
 docker build -f tools/benchmark/Dockerfile -t pg_jason_validator_bench .
 
-docker_args=(--rm --shm-size=1g -e RUNS -e SCALE -e DATASET_GIT_URL)
+docker_args=(--rm --shm-size=1g -e RUNS -e SCALE -e DATASET_GIT_URL -e START_AT -e SKIP_LOAD)
 if [ -n "${DATASET_CACHE:-}" ]; then
     docker_args+=(-v "$(cd "$DATASET_CACHE" && pwd)":/bench/dataset:ro -e DATASET_DIR=/bench/dataset)
 fi

@@ -1,4 +1,3 @@
-CREATE EXTENSION pg_jason_validator;
 SELECT misc_1('{}');
 SELECT misc_2('1');
 SELECT misc_2('{}');

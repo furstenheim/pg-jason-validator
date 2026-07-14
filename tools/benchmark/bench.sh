@@ -10,11 +10,14 @@
 #   2. is_jsonb_valid      - is_jsonb_valid(schema, data), schema interpreted per row
 #   3. pg_jsonschema       - jsonb_matches_schema(schema, data), schema compiled per row
 #   4. pg_jsonschema/comp. - jsonb_matches_compiled_schema(schema::jsonschema, data),
-#                            schema compiled once per query call site
+#                            schema compiled and cached per callsite (not in v0.3.4;
+#                            requires building pg_jsonschema from the main branch)
 set -euo pipefail
 
 SCALE="${SCALE:-1}"              # total copies of the dataset to load
 RUNS="${RUNS:-5}"                # timed repetitions per implementation
+START_AT="${START_AT:-0}"        # skip benchmarks with index < START_AT
+SKIP_LOAD="${SKIP_LOAD:-0}"      # set to 1 to reuse an already-running postgres with data loaded
 
 PGDATA=/bench/pgdata
 export PGHOST=/tmp PGDATABASE=bench
@@ -28,9 +31,10 @@ fi
 mapfile -t JSON_FILES < <(find "$DATASET_DIR" -name '*.json' -size +0 | sort)
 echo "== dataset files: ${JSON_FILES[*]} =="
 
-echo "== starting scratch postgres =="
-initdb -D "$PGDATA" --auth=trust --no-sync >/dev/null
-pg_ctl -D "$PGDATA" -l /bench/postgres.log -w -o "\
+if [ "$SKIP_LOAD" = "0" ]; then
+    echo "== starting scratch postgres =="
+    initdb -D "$PGDATA" --auth=trust --no-sync >/dev/null
+    pg_ctl -D "$PGDATA" -l /bench/postgres.log -w -o "\
  -c listen_addresses='' \
  -c unix_socket_directories=$PGHOST \
  -c fsync=off -c full_page_writes=off -c synchronous_commit=off \
@@ -38,20 +42,21 @@ pg_ctl -D "$PGDATA" -l /bench/postgres.log -w -o "\
  -c jit=off \
  -c max_parallel_workers_per_gather=0" start >/dev/null
 
-createdb bench
-psql -Xq -c "CREATE EXTENSION pg_jason_validator;" \
-        -c "CREATE EXTENSION is_jsonb_valid;" \
-        -c "CREATE EXTENSION pg_jsonschema;" \
-        -c "CREATE TABLE tweets (data jsonb);"
+    createdb bench
+    psql -Xq -c "CREATE EXTENSION pg_jason_validator;" \
+            -c "CREATE EXTENSION is_jsonb_valid;" \
+            -c "CREATE EXTENSION pg_jsonschema;" \
+            -c "CREATE TABLE tweets (data jsonb);"
 
-echo "== loading tweets =="
-python3 /usr/local/bin/load_tweets.py "${JSON_FILES[@]}" \
-    | psql -Xq -c "COPY tweets (data) FROM STDIN"
-if [ "$SCALE" -gt 1 ]; then
-    psql -Xq -c "INSERT INTO tweets
-                 SELECT t.data FROM (SELECT data FROM tweets) t, generate_series(2, $SCALE)"
+    echo "== loading tweets =="
+    python3 /usr/local/bin/load_tweets.py "${JSON_FILES[@]}" \
+        | psql -Xq -c "COPY tweets (data) FROM STDIN"
+    if [ "$SCALE" -gt 1 ]; then
+        psql -Xq -c "INSERT INTO tweets
+                     SELECT t.data FROM (SELECT data FROM tweets) t, generate_series(2, $SCALE)"
+    fi
+    psql -Xq -c "VACUUM ANALYZE tweets"
 fi
-psql -Xq -c "VACUUM ANALYZE tweets"
 ROWS=$(psql -XqAt -c "SELECT count(*) FROM tweets")
 echo "== $ROWS tweets loaded (scale $SCALE) =="
 
@@ -80,6 +85,7 @@ echo
 echo "== benchmark: $RUNS timed runs each, after one warmup =="
 printf '%-38s %13s %12s %12s %10s\n' implementation valid/total "min ms" "median ms" rows/s
 for i in "${!QUERIES[@]}"; do
+    [ "$i" -lt "$START_AT" ] && continue
     sql=${QUERIES[$i]}
     valid=$(psql -XqAt -c "$sql")   # warmup + semantics check
     times=()

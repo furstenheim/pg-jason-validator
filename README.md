@@ -1,4 +1,31 @@
 # pg_jason_validator
+![](./logo-small.png)
+
+## Human written section
+Long time ago I manually wrote [is-jsonb-valid](https://github.com/furstenheim/is_jsonb_valid) a json schema validator schema. The library works great, but it bothered me that we were parsing both schemas each time, the data that we validated, and the actual json schema. Not only that, but the code of the validator had to account for all possible branches of the json schema.
+
+In a real production DB, schemas evolve slowly. They are usually vetted and merged via PR. We could move all the schema parsing and navigation to compilation. Not only that, but we could ignore all the dead branches from the json schema.
+
+That idea is this project. The user writes the schema that he wants in validators.json, as well as the function name. Then a python script that runs on extension compilation reads the file and uses a list of macros in 'validator_macros.h' to generate the actual C code that runs the functions.
+
+The result is a faster validation function, at the expense of having to recompile for every schema change. My recommendation is to version the validators. So to do `pg_validate_tweets_schema_v0` then `pg_validate_tweets_schema_v1` and so on.
+
+Fair warning, this is a C extension in Postgres, so any error will result in a segmentation fault and your database crashing. I take no responsibility for that, use at your own risk. Also, the library was one-shotted by Fable 5. Trust it as much as you trust AI.
+
+
+To have a fair benchmark, I've run this against real production jsons, a db of 2M tweets. You can reproduce the benchmark doing `tools/benchmark/run.sh`
+
+| Implementation                    | rows/s (more is better) | factor |                  
+|-----------------------------------|---:|---:| 
+| pg_jason_validator (this library) | 26,287 | 1.56x |
+| pg_jsonschema (compiled schema)   | 16,824 | 1x (previous best) |                                                                
+| is_jsonb_valid                    | 8,797 | 0.52x |             
+| pg_jsonschema (standard)          | 639 | 0.03x |
+
+
+## AI generated README
+
+
 
 Compile-time generated JSON schema validators for PostgreSQL `jsonb`.
 

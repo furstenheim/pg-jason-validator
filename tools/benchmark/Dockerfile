@@ -7,8 +7,6 @@
 # run time, so the image only carries the extension sources and toolchain.
 FROM postgres:16-bookworm
 
-ARG PG_JSONSCHEMA_VERSION=0.3.4
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         postgresql-server-dev-$PG_MAJOR \
@@ -17,15 +15,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         ca-certificates \
         python3 \
+        python3-ijson \
+        clang \
+        pkg-config \
+        libssl-dev \
     && rm -rf /var/lib/apt/lists/* \
     && git lfs install --system
 
-# pg_jsonschema: prebuilt release package
-RUN arch="$(dpkg --print-architecture)" \
-    && curl -fsSL -o /tmp/pg_jsonschema.deb \
-        "https://github.com/supabase/pg_jsonschema/releases/download/v${PG_JSONSCHEMA_VERSION}/pg_jsonschema-v${PG_JSONSCHEMA_VERSION}-pg${PG_MAJOR}-${arch}-linux-gnu.deb" \
-    && dpkg -i /tmp/pg_jsonschema.deb \
-    && rm /tmp/pg_jsonschema.deb
+# pg_jsonschema: build from source (the compiled-schema type / jsonb_matches_compiled_schema
+# were added to main after the v0.3.4 release; no prebuilt package is available yet)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+        | sh -s -- -y --profile minimal --no-modify-path \
+    && . /root/.cargo/env \
+    && cargo install cargo-pgrx --version 0.16.1 --locked \
+    && cargo pgrx init "--pg${PG_MAJOR}=/usr/lib/postgresql/${PG_MAJOR}/bin/pg_config" \
+    && git clone --depth 1 https://github.com/supabase/pg_jsonschema /tmp/pg_jsonschema \
+    && cd /tmp/pg_jsonschema \
+    && cargo pgrx install --release \
+        --pg-config "/usr/lib/postgresql/${PG_MAJOR}/bin/pg_config" \
+        --features "pg${PG_MAJOR}" \
+    && rm -rf /tmp/pg_jsonschema /root/.cargo/registry /root/.cargo/git
 
 # is_jsonb_valid: the runtime-schema reference implementation
 RUN git clone --depth 1 https://github.com/furstenheim/is_jsonb_valid /tmp/is_jsonb_valid \

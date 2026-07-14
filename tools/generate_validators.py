@@ -390,7 +390,7 @@ class Generator:
 
     # ---- validators ------------------------------------------------------
 
-    def add_validator(self, name, schema):
+    def add_validator(self, name, schema, test=False):
         if not isinstance(name, str) or not name:
             raise GenError("validator name missing")
         if not all(c.islower() or c.isdigit() or c == "_" for c in name) \
@@ -400,11 +400,11 @@ class Generator:
             raise GenError("validator name must not start with a digit: %r" % name)
         if len(name) > 63:
             raise GenError("validator name too long: %r" % name)
-        if any(name == n for n, _ in self.validators):
+        if any(name == n for n, _, _t in self.validators):
             raise GenError("duplicate validator name: %r" % name)
         memo = {}
         nid = self.node(schema, schema, memo)
-        self.validators.append((name, nid))
+        self.validators.append((name, nid, test))
 
     # ---- output ----------------------------------------------------------
 
@@ -423,7 +423,7 @@ class Generator:
         for body in self.bodies:
             parts.extend(body)
             parts.append("")
-        for name, nid in self.validators:
+        for name, nid, _t in self.validators:
             parts.append("JSV_VALIDATOR(%s, jsv_node_%d)" % (name, nid))
         parts.append("")
         return "\n".join(parts)
@@ -432,10 +432,25 @@ class Generator:
         parts = []
         parts.append('\\echo Use "CREATE EXTENSION %s" to load this file. \\quit' % EXTENSION)
         parts.append("")
-        for name, _ in self.validators:
+        for name, _, is_test in self.validators:
+            if is_test:
+                continue
             parts.append("CREATE FUNCTION %s (data jsonb)" % name)
             parts.append("RETURNS boolean")
             parts.append("AS 'MODULE_PATHNAME', '%s'" % name)
+            parts.append("LANGUAGE C IMMUTABLE STRICT;")
+            parts.append("")
+        return "\n".join(parts)
+
+    def test_sql_source(self):
+        parts = []
+        parts.append("CREATE EXTENSION %s;" % EXTENSION)
+        for name, _, is_test in self.validators:
+            if not is_test:
+                continue
+            parts.append("CREATE FUNCTION %s (data jsonb)" % name)
+            parts.append("RETURNS boolean")
+            parts.append("AS '%s', '%s'" % (EXTENSION, name))
             parts.append("LANGUAGE C IMMUTABLE STRICT;")
             parts.append("")
         return "\n".join(parts)
@@ -448,18 +463,27 @@ def main():
     if not isinstance(entries, list):
         raise GenError("%s must contain an array of {name, schema} objects" % source)
 
+    import os
     gen = Generator()
     for entry in entries:
         if not isinstance(entry, dict) or "name" not in entry or "schema" not in entry:
             raise GenError("each entry must be an object with name and schema: %r" % (entry,))
-        gen.add_validator(entry["name"], entry["schema"])
+        gen.add_validator(entry["name"], entry["schema"], test=bool(entry.get("test", False)))
 
     with open("%s.c" % EXTENSION, "w") as f:
         f.write(gen.c_source(source))
     with open("%s--%s.sql" % (EXTENSION, VERSION), "w") as f:
         f.write(gen.sql_source())
-    print("generated %d validators, %d schema nodes"
-          % (len(gen.validators), len(gen.bodies)))
+    test_sql = gen.test_sql_source()
+    os.makedirs("sql", exist_ok=True)
+    os.makedirs("expected", exist_ok=True)
+    with open(os.path.join("sql", "%s_tests.sql" % EXTENSION), "w") as f:
+        f.write(test_sql)
+    with open(os.path.join("expected", "%s_tests.out" % EXTENSION), "w") as f:
+        f.write(test_sql)
+    test_count = sum(1 for _, _, t in gen.validators if t)
+    print("generated %d validators (%d test), %d schema nodes"
+          % (len(gen.validators), test_count, len(gen.bodies)))
 
 
 if __name__ == "__main__":
