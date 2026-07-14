@@ -57,9 +57,9 @@ SCHEMA_CACHE=my-schema.json tools/benchmark/run.sh        # pin a schema instead
 DATASET_GIT_URL=https://... tools/benchmark/run.sh        # different dataset
 ```
 
-There is also a manually triggered GitHub Action
-(`.github/workflows/benchmark.yml`, "Run workflow" in the Actions tab) that
-executes the same benchmark on a hosted runner.
+The benchmark is meant to be run locally: with the full dataset the
+per-row-compile pg_jsonschema variant alone takes hours, which is why there
+is deliberately no CI workflow for it.
 
 The scratch server is tuned for benchmarking, not durability: `fsync=off`,
 `jit=off` and `max_parallel_workers_per_gather=0` (single-process scans, so

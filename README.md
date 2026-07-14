@@ -132,7 +132,8 @@ Differences that follow from the compile-time model:
 modes. The schema is identified from the dataset itself (strict, with
 `additionalProperties: false`) and compiled into `validate_tweet()` inside
 the container. See [tools/benchmark/README.md](tools/benchmark/README.md);
-it can also be launched manually from the Actions tab (Benchmark workflow).
+it is meant to be run locally (with the full dataset it takes hours, so
+there is deliberately no CI workflow for it).
 
 ## CI
 
