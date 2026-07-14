@@ -443,6 +443,10 @@ class Generator:
         return "\n".join(parts)
 
     def test_sql_source(self):
+        # pg_regress runs psql with -a -q: statements are echoed verbatim,
+        # command tags are suppressed and blank input lines are not echoed.
+        # Keeping this file free of blank lines makes the expected output
+        # byte-identical to the input on every postgres version.
         parts = []
         parts.append("CREATE EXTENSION %s;" % EXTENSION)
         for name, _, is_test in self.validators:
@@ -450,25 +454,9 @@ class Generator:
                 continue
             parts.append("CREATE FUNCTION %s (data jsonb)" % name)
             parts.append("RETURNS boolean")
-            parts.append("AS '%s', '%s'" % (EXTENSION, name))
+            parts.append("AS '$libdir/%s', '%s'" % (EXTENSION, name))
             parts.append("LANGUAGE C IMMUTABLE STRICT;")
-            parts.append("")
-        return "\n".join(parts)
-
-    def test_expected_source(self):
-        parts = []
-        parts.append("CREATE EXTENSION %s;" % EXTENSION)
-        parts.append("CREATE EXTENSION")
-        for name, _, is_test in self.validators:
-            if not is_test:
-                continue
-            parts.append("CREATE FUNCTION %s (data jsonb)" % name)
-            parts.append("RETURNS boolean")
-            parts.append("AS '%s', '%s'" % (EXTENSION, name))
-            parts.append("LANGUAGE C IMMUTABLE STRICT;")
-            parts.append("CREATE FUNCTION")
-            parts.append("")
-        return "\n".join(parts)
+        return "\n".join(parts) + "\n"
 
 
 def main():
@@ -494,8 +482,9 @@ def main():
     os.makedirs("expected", exist_ok=True)
     with open(os.path.join("sql", "%s_tests.sql" % EXTENSION), "w") as f:
         f.write(test_sql)
+    # psql's echo of the file (no tags, no blank lines) IS the expected output
     with open(os.path.join("expected", "%s_tests.out" % EXTENSION), "w") as f:
-        f.write(gen.test_expected_source())
+        f.write(test_sql)
     test_count = sum(1 for _, _, t in gen.validators if t)
     print("generated %d validators (%d test), %d schema nodes"
           % (len(gen.validators), test_count, len(gen.bodies)))
